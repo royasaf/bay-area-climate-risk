@@ -3,8 +3,6 @@ export interface LayerConfig {
   label: string;
   color: string;
   geojsonPath: string;
-  tilesetId: string;    // mapbox://tilesetId
-  sourceLayer: string;  // layer name inside the tileset
   source: {
     name: string;
     organization: string;
@@ -18,9 +16,7 @@ export const LAYERS: LayerConfig[] = [
     id: "wildfire-risk",
     label: "Wildfire Risk (WUI)",
     color: "#ef4444",
-    geojsonPath: "/data/Wildland_Urban_Interface.geojson",
-    tilesetId: "royasaf.wildfire-risk",
-    sourceLayer: "wildfire_risk",
+    geojsonPath: "/data/wildfire-risk.geojson",
     source: {
       name: "Wildland Urban Interface",
       organization: "CAL FIRE",
@@ -29,12 +25,22 @@ export const LAYERS: LayerConfig[] = [
     },
   },
   {
+    id: "sea-level-rise",
+    label: "Sea Level Rise",
+    color: "#3b82f6",
+    geojsonPath: "/data/sea-level-rise.geojson",
+    source: {
+      name: "Mean Tide Level Inundation Scenarios",
+      organization: "BCDC",
+      url: "https://www.bcdc.ca.gov/planning/climate-change/sea-level-rise-adaptation/",
+      year: "2023",
+    },
+  },
+  {
     id: "community-vulnerability",
     label: "Community Vulnerability",
     color: "#a855f7",
-    geojsonPath: "/data/CommunityVulnerability2020_-7044967969664837102.geojson",
-    tilesetId: "royasaf.community-vuln",
-    sourceLayer: "community_vulnerability",
+    geojsonPath: "/data/community-vulnerability.geojson",
     source: {
       name: "Community Vulnerability BCDC 2020",
       organization: "BCDC",
@@ -44,14 +50,13 @@ export const LAYERS: LayerConfig[] = [
   },
 ];
 
-// Shared hazard class palette (used by WUI HAZ_DESC and FHSZ Haz_Class)
+// Shared hazard class palette
 export const HAZ_COLOR: Record<string, string> = {
   "Very High": "#dc2626",
   "High":      "#f97316",
   "Moderate":  "#fbbf24",
 };
 
-// Backward-compat alias
 export const WILDFIRE_COLOR = HAZ_COLOR;
 
 export const VULNERABILITY_COLOR: Record<string, string> = {

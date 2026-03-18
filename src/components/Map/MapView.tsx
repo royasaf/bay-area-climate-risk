@@ -1,20 +1,21 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Map, { Source, Layer, Marker } from "react-map-gl/mapbox";
-import type { MapRef } from "react-map-gl/mapbox";
-import "mapbox-gl/dist/mapbox-gl.css";
+import Map, { Source, Layer, Marker } from "react-map-gl/maplibre";
+import type { MapRef } from "react-map-gl/maplibre";
+import "maplibre-gl/dist/maplibre-gl.css";
 import LayerSidebar from "./LayerSidebar";
 import SearchBar from "./SearchBar";
 import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR } from "@/config/layers";
 
 const BAY_AREA = { longitude: -122.35, latitude: 37.65, zoom: 9 };
+const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
 
-const wuiLayer = (sourceLayer: string) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const wuiLayer = (id: string): any => ({
   id: "wildfire-risk-fill",
-  type: "fill" as const,
-  "source-layer": sourceLayer,
-  minzoom: 5,
+  source: id,
+  type: "fill",
   paint: {
     "fill-color": [
       "match", ["get", "HAZ_DESC"],
@@ -27,11 +28,22 @@ const wuiLayer = (sourceLayer: string) => ({
   },
 });
 
-const vulnerabilityLayer = (sourceLayer: string) => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const slrLayer = (id: string): any => ({
+  id: "sea-level-rise-fill",
+  source: id,
+  type: "fill",
+  paint: {
+    "fill-color": "#3b82f6",
+    "fill-opacity": 0.5,
+  },
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const vulnerabilityLayer = (id: string): any => ({
   id: "community-vulnerability-fill",
-  type: "fill" as const,
-  "source-layer": sourceLayer,
-  minzoom: 5,
+  source: id,
+  type: "fill",
   paint: {
     "fill-color": [
       "match", ["get", "socVulnRank"],
@@ -46,6 +58,7 @@ const vulnerabilityLayer = (sourceLayer: string) => ({
 });
 
 const wui        = LAYERS.find((l) => l.id === "wildfire-risk")!;
+const slr        = LAYERS.find((l) => l.id === "sea-level-rise")!;
 const vulnerable = LAYERS.find((l) => l.id === "community-vulnerability")!;
 
 export default function MapView() {
@@ -53,6 +66,7 @@ export default function MapView() {
   const [visible, setVisible] = useState<Record<string, boolean>>(
     Object.fromEntries(LAYERS.map((l) => [l.id, true]))
   );
+  const [slrLevel, setSlrLevel] = useState(1.5);
   const [pin, setPin] = useState<{ lng: number; lat: number } | null>(null);
 
   function toggleLayer(id: string) {
@@ -66,24 +80,34 @@ export default function MapView() {
 
   return (
     <div className="flex h-screen w-screen">
-      <LayerSidebar visible={visible} onToggle={toggleLayer} />
+      <LayerSidebar
+        visible={visible}
+        onToggle={toggleLayer}
+        slrLevel={slrLevel}
+        onSlrLevelChange={setSlrLevel}
+      />
       <div className="flex-1 relative">
         <Map
           ref={mapRef}
-          mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
           initialViewState={BAY_AREA}
-          mapStyle="mapbox://styles/mapbox/light-v11"
+          mapStyle={OPENFREEMAP_STYLE}
         >
           {visible["wildfire-risk"] && (
-            <Source id="wildfire-risk" type="vector" url={`mapbox://${wui.tilesetId}`}>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              <Layer {...(wuiLayer(wui.sourceLayer) as any)} />
+            <Source id="wildfire-risk" type="geojson" data={wui.geojsonPath}>
+              <Layer {...wuiLayer("wildfire-risk")} />
+            </Source>
+          )}
+          {visible["sea-level-rise"] && (
+            <Source id="sea-level-rise" type="geojson" data={slr.geojsonPath}>
+              <Layer
+                {...slrLayer("sea-level-rise")}
+                filter={["==", ["get", "level"], slrLevel]}
+              />
             </Source>
           )}
           {visible["community-vulnerability"] && (
-            <Source id="community-vulnerability" type="vector" url={`mapbox://${vulnerable.tilesetId}`}>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              <Layer {...(vulnerabilityLayer(vulnerable.sourceLayer) as any)} />
+            <Source id="community-vulnerability" type="geojson" data={vulnerable.geojsonPath}>
+              <Layer {...vulnerabilityLayer("community-vulnerability")} />
             </Source>
           )}
           {pin && <Marker longitude={pin.lng} latitude={pin.lat} />}

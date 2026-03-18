@@ -39,4 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-public/data/
+public/data/Wildland_Urban_Interface.geojson
+public/data/CommunityVulnerability2020_-7044967969664837102.geojson
+public/data/Fire_Hazard_Severity_Zones_-1238105156905915689.geojson
+public/data/calfire-sra.geojson

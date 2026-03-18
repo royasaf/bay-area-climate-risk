@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR } from "@/config/layers";
 
+const SLR_LEVELS = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5];
+
 interface Props {
   visible: Record<string, boolean>;
   onToggle: (id: string) => void;
+  slrLevel: number;
+  onSlrLevelChange: (level: number) => void;
 }
 
 const LEGENDS: Record<string, { label: string; color: string }[]> = {
@@ -14,7 +18,7 @@ const LEGENDS: Record<string, { label: string; color: string }[]> = {
     { label: "High",      color: HAZ_COLOR["High"] },
     { label: "Moderate",  color: HAZ_COLOR["Moderate"] },
   ],
-"community-vulnerability": [
+  "community-vulnerability": [
     { label: "Highest",  color: VULNERABILITY_COLOR["Highest social vulnerability"] },
     { label: "High",     color: VULNERABILITY_COLOR["High social vulnerability"] },
     { label: "Moderate", color: VULNERABILITY_COLOR["Moderate social vulnerability"] },
@@ -22,7 +26,7 @@ const LEGENDS: Record<string, { label: string; color: string }[]> = {
   ],
 };
 
-export default function LayerSidebar({ visible, onToggle }: Props) {
+export default function LayerSidebar({ visible, onToggle, slrLevel, onSlrLevelChange }: Props) {
   const [showSources, setShowSources] = useState(false);
 
   return (
@@ -54,6 +58,29 @@ export default function LayerSidebar({ visible, onToggle }: Props) {
                   {layer.label}
                 </span>
               </label>
+
+              {layer.id === "sea-level-rise" && visible[layer.id] && (
+                <div className="mt-2 ml-7">
+                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <span>Scenario</span>
+                    <span className="font-medium text-blue-600">{slrLevel} ft</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={SLR_LEVELS.length - 1}
+                    step={1}
+                    value={SLR_LEVELS.indexOf(slrLevel)}
+                    onChange={(e) => onSlrLevelChange(SLR_LEVELS[parseInt(e.target.value)])}
+                    className="w-full accent-blue-500"
+                  />
+                  <div className="flex justify-between text-xs text-gray-400">
+                    <span>0.5</span>
+                    <span>9.5</span>
+                  </div>
+                </div>
+              )}
+
               {visible[layer.id] && LEGENDS[layer.id] && (
                 <ul className="mt-1.5 ml-7 space-y-1">
                   {LEGENDS[layer.id].map(({ label, color }) => (
