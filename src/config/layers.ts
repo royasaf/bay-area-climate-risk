@@ -30,9 +30,9 @@ export const LAYERS: LayerConfig[] = [
     color: "#3b82f6",
     geojsonPath: "/data/sea-level-rise.geojson",
     source: {
-      name: "Mean Tide Level Inundation Scenarios",
-      organization: "BCDC",
-      url: "https://www.bcdc.ca.gov/planning/climate-change/sea-level-rise-adaptation/",
+      name: "Sea Level Rise Inundation Scenarios",
+      organization: "NOAA",
+      url: "https://coast.noaa.gov/slrdata/Sea_Level_Rise_Vectors/CA/index.html",
       year: "2023",
     },
   },
