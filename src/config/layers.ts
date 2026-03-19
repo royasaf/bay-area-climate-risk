@@ -49,6 +49,18 @@ export const LAYERS: LayerConfig[] = [
     },
   },
   {
+    id: "calenviroscreen",
+    label: "CalEnviroScreen 4.0",
+    color: "#9333ea",
+    geojsonPath: "/data/calenviroscreen.geojson",
+    source: {
+      name: "CalEnviroScreen 4.0",
+      organization: "CalEPA / OEHHA",
+      url: "https://oehha.ca.gov/calenviroscreen/report/calenviroscreen-40",
+      year: "2021",
+    },
+  },
+  {
     id: "urban-heat-island",
     label: "Urban Heat Island Effect",
     color: "#f97316",

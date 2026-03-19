@@ -95,6 +95,20 @@ export default function LayerSidebar({ visible, onToggle, slrLevel, onSlrLevelCh
                 </ul>
               )}
 
+              {visible[layer.id] && layer.id === "calenviroscreen" && (
+                <div className="mt-1.5 ml-7">
+                  <div
+                    className="h-2 rounded-sm"
+                    style={{ background: "linear-gradient(to right, #f3e8ff, #c084fc, #9333ea, #6b21a8, #3b0764)" }}
+                  />
+                  <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                    <span>Low (1)</span>
+                    <span>CES score</span>
+                    <span>High (65)</span>
+                  </div>
+                </div>
+              )}
+
               {visible[layer.id] && layer.id === "urban-heat-island" && (
                 <div className="mt-1.5 ml-7">
                   <div

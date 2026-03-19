@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-import Map, { Source, Layer, Marker } from "react-map-gl/maplibre";
+import { useState, useRef, useCallback } from "react";
+import Map, { Source, Layer, Marker, Popup } from "react-map-gl/maplibre";
 import type { MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import LayerSidebar from "./LayerSidebar";
@@ -63,26 +63,110 @@ const uhiLayer = (id: string): any => ({
   source: id,
   type: "fill",
   paint: {
-    // Continuous green→yellow→orange→red gradient on raw degHourDay field
-    // Stops anchored at actual data percentiles: p0=0.06, p25=5.8, p50=16.6, p75=44.5, p90=77.5, max=122
     "fill-color": [
       "interpolate", ["linear"], ["get", "degHourDay"],
-        0,    "#16a34a",  // green  — near zero UHI
-        6,    "#84cc16",  // lime
-        17,   "#facc15",  // yellow — median
-        45,   "#f97316",  // orange — p75
-        80,   "#dc2626",  // red    — p90
-        122,  "#7f1d1d",  // dark red — max
+        0,    "#16a34a",
+        6,    "#84cc16",
+        17,   "#facc15",
+        45,   "#f97316",
+        80,   "#dc2626",
+        122,  "#7f1d1d",
     ],
     "fill-opacity": 0.7,
   },
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const cesLayer = (id: string): any => ({
+  id: "calenviroscreen-fill",
+  source: id,
+  type: "fill",
+  paint: {
+    // Light → dark purple scaled to CIscore range (1–65.1), nulls transparent
+    "fill-color": [
+      "interpolate", ["linear"],
+      ["coalesce", ["get", "CIscore"], 0],
+      0,    "transparent",
+      1,    "#f3e8ff",
+      16.5, "#c084fc",
+      26.8, "#9333ea",
+      36.7, "#6b21a8",
+      65,   "#3b0764",
+    ],
+    "fill-opacity": 0.75,
+  },
+});
+
+const POLLUTION_LABELS: Record<string, string> = {
+  dieselP:  "Diesel PM",
+  trafficP: "Traffic",
+  pmP:      "PM2.5",
+  ozoneP:   "Ozone",
+  pestP:    "Pesticides",
+  drinkP:   "Drinking water",
+  leadP:    "Lead",
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function CesPopup({ props }: { props: Record<string, any> }) {
+  const top3 = Object.entries(POLLUTION_LABELS)
+    .map(([key, label]) => ({ label, pct: props[key] ?? 0 }))
+    .sort((a, b) => b.pct - a.pct)
+    .slice(0, 3);
+
+  return (
+    <div className="text-xs text-gray-800 min-w-[200px]">
+      <p className="font-semibold text-purple-800 mb-1">
+        CES Score: {props.CIscore?.toFixed(1) ?? "N/A"}
+        <span className="font-normal text-gray-500 ml-1">
+          ({props.CIscoreP?.toFixed(0)}th %ile)
+        </span>
+      </p>
+      <div className="border-t border-gray-200 pt-1 mb-1">
+        <p className="font-medium text-gray-600 mb-0.5">Top pollution burdens</p>
+        {top3.map(({ label, pct }) => (
+          <div key={label} className="flex justify-between gap-4">
+            <span>{label}</span>
+            <span className="font-medium">{pct?.toFixed(0)}th %ile</span>
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-gray-200 pt-1">
+        <p className="font-medium text-gray-600 mb-0.5">Demographics</p>
+        <div className="flex justify-between gap-4">
+          <span>Poverty rate</span>
+          <span className="font-medium">{props.pov?.toFixed(0)}%</span>
+        </div>
+        {props.Hispanic_pct > 0 && (
+          <div className="flex justify-between gap-4">
+            <span>Hispanic</span>
+            <span className="font-medium">{props.Hispanic_pct?.toFixed(0)}%</span>
+          </div>
+        )}
+        {props.African_American_pct > 0 && (
+          <div className="flex justify-between gap-4">
+            <span>Black/African Am.</span>
+            <span className="font-medium">{props.African_American_pct?.toFixed(0)}%</span>
+          </div>
+        )}
+        {props.Asian_American_pct > 0 && (
+          <div className="flex justify-between gap-4">
+            <span>Asian American</span>
+            <span className="font-medium">{props.Asian_American_pct?.toFixed(0)}%</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const wui        = LAYERS.find((l) => l.id === "wildfire-risk")!;
 const slr        = LAYERS.find((l) => l.id === "sea-level-rise")!;
 const vulnerable = LAYERS.find((l) => l.id === "community-vulnerability")!;
 const uhi        = LAYERS.find((l) => l.id === "urban-heat-island")!;
+const ces        = LAYERS.find((l) => l.id === "calenviroscreen")!;
 
+type CesHover = { lng: number; lat: number; props: Record<string, number | null> } | null;
 
 export default function MapView() {
   const mapRef = useRef<MapRef>(null);
@@ -91,6 +175,7 @@ export default function MapView() {
   );
   const [slrLevel, setSlrLevel] = useState(1.5);
   const [pin, setPin] = useState<{ lng: number; lat: number } | null>(null);
+  const [cesHover, setCesHover] = useState<CesHover>(null);
 
   function toggleLayer(id: string) {
     setVisible((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -100,6 +185,16 @@ export default function MapView() {
     setPin({ lng, lat });
     mapRef.current?.flyTo({ center: [lng, lat], zoom: 13, duration: 1200 });
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleMouseMove = useCallback((e: any) => {
+    const feat = e.features?.[0];
+    if (feat && feat.properties?.CIscore != null) {
+      setCesHover({ lng: e.lngLat.lng, lat: e.lngLat.lat, props: feat.properties });
+    } else {
+      setCesHover(null);
+    }
+  }, []);
 
   return (
     <div className="flex h-screen w-screen">
@@ -114,6 +209,9 @@ export default function MapView() {
           ref={mapRef}
           initialViewState={BAY_AREA}
           mapStyle={OPENFREEMAP_STYLE}
+          interactiveLayerIds={visible["calenviroscreen"] ? ["calenviroscreen-fill"] : []}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setCesHover(null)}
         >
           {visible["wildfire-risk"] && (
             <Source id="wildfire-risk" type="geojson" data={wui.geojsonPath}>
@@ -133,10 +231,26 @@ export default function MapView() {
               <Layer {...vulnerabilityLayer("community-vulnerability")} />
             </Source>
           )}
+          {visible["calenviroscreen"] && (
+            <Source id="calenviroscreen" type="geojson" data={ces.geojsonPath}>
+              <Layer {...cesLayer("calenviroscreen")} />
+            </Source>
+          )}
           {visible["urban-heat-island"] && (
             <Source id="urban-heat-island" type="geojson" data={uhi.geojsonPath}>
               <Layer {...uhiLayer("urban-heat-island")} />
             </Source>
+          )}
+          {cesHover && (
+            <Popup
+              longitude={cesHover.lng}
+              latitude={cesHover.lat}
+              closeButton={false}
+              anchor="bottom-left"
+              offset={8}
+            >
+              <CesPopup props={cesHover.props} />
+            </Popup>
           )}
           {pin && <Marker longitude={pin.lng} latitude={pin.lat} />}
         </Map>
