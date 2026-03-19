@@ -82,7 +82,6 @@ const cesLayer = (id: string): any => ({
   source: id,
   type: "fill",
   paint: {
-    // Light → dark purple scaled to CIscore range (1–65.1), nulls transparent
     "fill-color": [
       "interpolate", ["linear"],
       ["coalesce", ["get", "CIscore"], 0],
@@ -160,11 +159,13 @@ function CesPopup({ props }: { props: Record<string, any> }) {
   );
 }
 
-const wui        = LAYERS.find((l) => l.id === "wildfire-risk")!;
-const slr        = LAYERS.find((l) => l.id === "sea-level-rise")!;
-const vulnerable = LAYERS.find((l) => l.id === "community-vulnerability")!;
-const uhi        = LAYERS.find((l) => l.id === "urban-heat-island")!;
-const ces        = LAYERS.find((l) => l.id === "calenviroscreen")!;
+const LAYER_DATA = {
+  "wildfire-risk":        LAYERS.find((l) => l.id === "wildfire-risk")!,
+  "sea-level-rise":       LAYERS.find((l) => l.id === "sea-level-rise")!,
+  "community-vulnerability": LAYERS.find((l) => l.id === "community-vulnerability")!,
+  "calenviroscreen":      LAYERS.find((l) => l.id === "calenviroscreen")!,
+  "urban-heat-island":    LAYERS.find((l) => l.id === "urban-heat-island")!,
+};
 
 type CesHover = { lng: number; lat: number; props: Record<string, number | null> } | null;
 
@@ -173,12 +174,25 @@ export default function MapView() {
   const [visible, setVisible] = useState<Record<string, boolean>>(
     Object.fromEntries(LAYERS.map((l) => [l.id, true]))
   );
+  // Top of list = rendered on top of the map (rendered last in MapLibre)
+  const [layerOrder, setLayerOrder] = useState(LAYERS.map((l) => l.id));
   const [slrLevel, setSlrLevel] = useState(1.5);
   const [pin, setPin] = useState<{ lng: number; lat: number } | null>(null);
   const [cesHover, setCesHover] = useState<CesHover>(null);
 
   function toggleLayer(id: string) {
     setVisible((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  function handleReorder(fromId: string, toId: string) {
+    setLayerOrder((prev) => {
+      const next = [...prev];
+      const fromIdx = next.indexOf(fromId);
+      const toIdx = next.indexOf(toId);
+      next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, fromId);
+      return next;
+    });
   }
 
   function handleSearchSelect(lng: number, lat: number) {
@@ -196,6 +210,9 @@ export default function MapView() {
     }
   }, []);
 
+  // Render bottom-to-top: reverse so first item in layerOrder renders last (on top)
+  const renderOrder = [...layerOrder].reverse();
+
   return (
     <div className="flex h-screen w-screen">
       <LayerSidebar
@@ -203,6 +220,8 @@ export default function MapView() {
         onToggle={toggleLayer}
         slrLevel={slrLevel}
         onSlrLevelChange={setSlrLevel}
+        layerOrder={layerOrder}
+        onReorder={handleReorder}
       />
       <div className="flex-1 relative">
         <Map
@@ -213,34 +232,36 @@ export default function MapView() {
           onMouseMove={handleMouseMove}
           onMouseLeave={() => setCesHover(null)}
         >
-          {visible["wildfire-risk"] && (
-            <Source id="wildfire-risk" type="geojson" data={wui.geojsonPath}>
-              <Layer {...wuiLayer("wildfire-risk")} />
-            </Source>
-          )}
-          {visible["sea-level-rise"] && (
-            <Source id="sea-level-rise" type="geojson" data={slr.geojsonPath}>
-              <Layer
-                {...slrLayer("sea-level-rise")}
-                filter={["==", ["get", "level"], slrLevel]}
-              />
-            </Source>
-          )}
-          {visible["community-vulnerability"] && (
-            <Source id="community-vulnerability" type="geojson" data={vulnerable.geojsonPath}>
-              <Layer {...vulnerabilityLayer("community-vulnerability")} />
-            </Source>
-          )}
-          {visible["calenviroscreen"] && (
-            <Source id="calenviroscreen" type="geojson" data={ces.geojsonPath}>
-              <Layer {...cesLayer("calenviroscreen")} />
-            </Source>
-          )}
-          {visible["urban-heat-island"] && (
-            <Source id="urban-heat-island" type="geojson" data={uhi.geojsonPath}>
-              <Layer {...uhiLayer("urban-heat-island")} />
-            </Source>
-          )}
+          {renderOrder.map((id) => {
+            if (!visible[id]) return null;
+            const data = LAYER_DATA[id as keyof typeof LAYER_DATA];
+            if (id === "wildfire-risk") return (
+              <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
+                <Layer {...wuiLayer(id)} />
+              </Source>
+            );
+            if (id === "sea-level-rise") return (
+              <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
+                <Layer {...slrLayer(id)} filter={["==", ["get", "level"], slrLevel]} />
+              </Source>
+            );
+            if (id === "community-vulnerability") return (
+              <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
+                <Layer {...vulnerabilityLayer(id)} />
+              </Source>
+            );
+            if (id === "calenviroscreen") return (
+              <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
+                <Layer {...cesLayer(id)} />
+              </Source>
+            );
+            if (id === "urban-heat-island") return (
+              <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
+                <Layer {...uhiLayer(id)} />
+              </Source>
+            );
+            return null;
+          })}
           {cesHover && (
             <Popup
               longitude={cesHover.lng}
