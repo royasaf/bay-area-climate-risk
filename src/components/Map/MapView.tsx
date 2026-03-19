@@ -57,9 +57,21 @@ const vulnerabilityLayer = (id: string): any => ({
   },
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const uhiLayer = (id: string): any => ({
+  id: "urban-heat-island-fill",
+  source: id,
+  type: "fill",
+  paint: {
+    "fill-color": "#f97316",
+    "fill-opacity": 0.6,
+  },
+});
+
 const wui        = LAYERS.find((l) => l.id === "wildfire-risk")!;
 const slr        = LAYERS.find((l) => l.id === "sea-level-rise")!;
 const vulnerable = LAYERS.find((l) => l.id === "community-vulnerability")!;
+const uhi        = LAYERS.find((l) => l.id === "urban-heat-island")!;
 
 export default function MapView() {
   const mapRef = useRef<MapRef>(null);
@@ -108,6 +120,11 @@ export default function MapView() {
           {visible["community-vulnerability"] && (
             <Source id="community-vulnerability" type="geojson" data={vulnerable.geojsonPath}>
               <Layer {...vulnerabilityLayer("community-vulnerability")} />
+            </Source>
+          )}
+          {visible["urban-heat-island"] && (
+            <Source id="urban-heat-island" type="geojson" data={uhi.geojsonPath}>
+              <Layer {...uhiLayer("urban-heat-island")} />
             </Source>
           )}
           {pin && <Marker longitude={pin.lng} latitude={pin.lat} />}

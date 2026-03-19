@@ -38,7 +38,7 @@ export const LAYERS: LayerConfig[] = [
   },
   {
     id: "community-vulnerability",
-    label: "Community Vulnerability",
+    label: "Flooding Community Vulnerability",
     color: "#a855f7",
     geojsonPath: "/data/community-vulnerability.geojson",
     source: {
@@ -46,6 +46,18 @@ export const LAYERS: LayerConfig[] = [
       organization: "BCDC",
       url: "https://data.ca.gov/dataset/community-vulnerability-bcdc-2020",
       year: "2020",
+    },
+  },
+  {
+    id: "urban-heat-island",
+    label: "Urban Heat Island Effect",
+    color: "#f97316",
+    geojsonPath: "/data/urban-heat-island.geojson",
+    source: {
+      name: "Urban Heat Island Interactive Maps",
+      organization: "CalEPA",
+      url: "https://calepa.ca.gov/urban-heat-island-interactive-maps/",
+      year: "2023",
     },
   },
 ];
