@@ -25,10 +25,10 @@ const LEGENDS: Record<string, { label: string; color: string }[]> = {
     { label: "Low",      color: VULNERABILITY_COLOR["Low social vulnerability"] },
   ],
   "urban-heat-island": [
-    { label: "Very High  >45 °C·hr/day",  color: UHI_COLOR["Very High"] },
-    { label: "High       17–45 °C·hr/day", color: UHI_COLOR["High"] },
-    { label: "Moderate   6–17 °C·hr/day",  color: UHI_COLOR["Moderate"] },
-    { label: "Low        <6 °C·hr/day",    color: UHI_COLOR["Low"] },
+    { label: "Very High  >70 °C·hr/day",   color: UHI_COLOR["Very High"] },
+    { label: "High       30–70 °C·hr/day",  color: UHI_COLOR["High"] },
+    { label: "Moderate   10–30 °C·hr/day",  color: UHI_COLOR["Moderate"] },
+    { label: "Low        <10 °C·hr/day",    color: UHI_COLOR["Low"] },
   ],
 };
 

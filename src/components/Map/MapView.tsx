@@ -80,6 +80,30 @@ const slr        = LAYERS.find((l) => l.id === "sea-level-rise")!;
 const vulnerable = LAYERS.find((l) => l.id === "community-vulnerability")!;
 const uhi        = LAYERS.find((l) => l.id === "urban-heat-island")!;
 
+// Debug: log UHI data distribution when loaded
+async function logUhiStats() {
+  const res = await fetch(uhi.geojsonPath);
+  const data = await res.json();
+  const vals: number[] = data.features
+    .map((f: { properties: { degHourDay?: number } }) => f.properties.degHourDay)
+    .filter((v: unknown) => v != null && (v as number) > 0)
+    .sort((a: number, b: number) => a - b);
+  const n = vals.length;
+  const nullCount = data.features.length - n;
+  console.group("UHI degHourDay stats");
+  console.log("Total features:", data.features.length);
+  console.log("Null/zero values:", nullCount);
+  console.log("Min:", vals[0], "Max:", vals[n - 1]);
+  console.log("p25:", vals[Math.floor(n * 0.25)], "p50:", vals[Math.floor(n * 0.5)], "p75:", vals[Math.floor(n * 0.75)]);
+  console.log("Sample (first 10):", vals.slice(0, 10));
+  console.log("Thresholds used — Low:<10, Moderate:10-30, High:30-70, Very High:>70");
+  console.log("Counts by rank:", Object.fromEntries(
+    ["Low","Moderate","High","Very High"].map(r => [r, data.features.filter((f: {properties:{uhiiRank:string}}) => f.properties.uhiiRank === r).length])
+  ));
+  console.groupEnd();
+}
+if (typeof window !== "undefined") logUhiStats();
+
 export default function MapView() {
   const mapRef = useRef<MapRef>(null);
   const [visible, setVisible] = useState<Record<string, boolean>>(
