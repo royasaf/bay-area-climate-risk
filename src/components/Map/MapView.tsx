@@ -96,7 +96,7 @@ async function logUhiStats() {
   console.log("Min:", vals[0], "Max:", vals[n - 1]);
   console.log("p25:", vals[Math.floor(n * 0.25)], "p50:", vals[Math.floor(n * 0.5)], "p75:", vals[Math.floor(n * 0.75)]);
   console.log("Sample (first 10):", vals.slice(0, 10));
-  console.log("Thresholds used — Low:<10, Moderate:10-30, High:30-70, Very High:>70");
+  console.log("Thresholds used — Low:<6, Moderate:6-17, High:17-45, Very High:>45 (anchored at p25/p50/p75 of dataset)");
   console.log("Counts by rank:", Object.fromEntries(
     ["Low","Moderate","High","Very High"].map(r => [r, data.features.filter((f: {properties:{uhiiRank:string}}) => f.properties.uhiiRank === r).length])
   ));
