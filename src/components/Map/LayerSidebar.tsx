@@ -28,6 +28,7 @@ const LEGENDS: Record<string, { label: string; color: string }[]> = {
 
 export default function LayerSidebar({ visible, onToggle, slrLevel, onSlrLevelChange }: Props) {
   const [showSources, setShowSources] = useState(false);
+  const [showMethodology, setShowMethodology] = useState(false);
 
   return (
     <aside className="w-60 shrink-0 bg-white border-r border-gray-200 flex flex-col z-10">
@@ -129,8 +130,28 @@ export default function LayerSidebar({ visible, onToggle, slrLevel, onSlrLevelCh
 
       <div className="mt-auto border-t border-gray-200">
         <button
-          onClick={() => setShowSources((s) => !s)}
+          onClick={() => setShowMethodology((s) => !s)}
           className="w-full px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide hover:bg-gray-50 flex items-center justify-between"
+        >
+          How it&apos;s calculated
+          <span>{showMethodology ? "▲" : "▼"}</span>
+        </button>
+        {showMethodology && (
+          <ul className="px-4 pb-3 space-y-3 max-h-72 overflow-y-auto">
+            {LAYERS.map(({ id, label, color, methodology }) => (
+              <li key={id}>
+                <p className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-sm shrink-0 inline-block" style={{ backgroundColor: color }} />
+                  {label}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{methodology}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+        <button
+          onClick={() => setShowSources((s) => !s)}
+          className="w-full px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide hover:bg-gray-50 flex items-center justify-between border-t border-gray-200"
         >
           Sources
           <span>{showSources ? "▲" : "▼"}</span>

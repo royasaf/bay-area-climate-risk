@@ -9,6 +9,7 @@ export interface LayerConfig {
     url: string;
     year: string;
   };
+  methodology: string;
 }
 
 export const LAYERS: LayerConfig[] = [
@@ -23,6 +24,7 @@ export const LAYERS: LayerConfig[] = [
       url: "https://hub.arcgis.com/maps/ab3148666b084efcbe3bec0bf6af7441/about",
       year: "2022",
     },
+    methodology: "CAL FIRE designates Fire Hazard Severity Zones (FHSZ) based on fuel load, slope, fire weather, and ember production modeled across the landscape. The Wildland-Urban Interface (WUI) layer marks where structures intermingle with or are adjacent to wildland vegetation, identifying communities at elevated ignition and spread risk.",
   },
   {
     id: "sea-level-rise",
@@ -35,6 +37,7 @@ export const LAYERS: LayerConfig[] = [
       url: "https://coast.noaa.gov/slrdata/Sea_Level_Rise_Vectors/CA/index.html",
       year: "2023",
     },
+    methodology: "NOAA's Office for Coastal Management models inundation by overlaying sea level rise scenarios (0.5–9.5 ft above current mean higher high water) onto a high-resolution digital elevation model (DEM) derived from lidar surveys. Each scenario shows the land area that would be permanently flooded under that water level, assuming no additional storm surge.",
   },
   {
     id: "community-vulnerability",
@@ -47,6 +50,7 @@ export const LAYERS: LayerConfig[] = [
       url: "https://data.ca.gov/dataset/community-vulnerability-bcdc-2020",
       year: "2020",
     },
+    methodology: "The San Francisco Bay Conservation and Development Commission (BCDC) scores census tracts by combining physical flood exposure with social vulnerability indicators — including poverty rate, disability status, linguistic isolation, and housing quality — drawn from the American Community Survey. Tracts with both high flood risk and low adaptive capacity rank highest.",
   },
   {
     id: "calenviroscreen",
@@ -59,6 +63,7 @@ export const LAYERS: LayerConfig[] = [
       url: "https://oehha.ca.gov/calenviroscreen/report/calenviroscreen-40",
       year: "2021",
     },
+    methodology: "OEHHA scores every California census tract using 21 indicators split into two groups: Pollution Burden (air quality, drinking water contaminants, pesticides, toxic releases, traffic, cleanup sites) and Population Characteristics (health outcomes like asthma and cardiovascular disease, plus socioeconomic factors like poverty and educational attainment). The two group scores are multiplied to produce the overall CES score, so that disadvantaged communities facing multiple stressors rank highest.",
   },
   {
     id: "urban-heat-island",
@@ -71,6 +76,7 @@ export const LAYERS: LayerConfig[] = [
       url: "https://calepa.ca.gov/urban-heat-island-interactive-maps/",
       year: "2023",
     },
+    methodology: "CalEPA measures the Urban Heat Island Intensity (UHII) using atmospheric modeling across 182 warm-season days (2006 & 2013) at hourly timesteps. Each census tract is compared to nearby upwind rural reference points at 2 m above ground — where people experience heat. The result is expressed as DegHourDay (UHII ÷ 182): the average daily heat differential in degree-Celsius-hours. An increase of 1 °C sustained for 8 hours equals 8 °C·hr/day.",
   },
 ];
 
