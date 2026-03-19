@@ -6,7 +6,7 @@ import type { MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import LayerSidebar from "./LayerSidebar";
 import SearchBar from "./SearchBar";
-import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR } from "@/config/layers";
+import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR, UHI_COLOR } from "@/config/layers";
 
 const BAY_AREA = { longitude: -122.35, latitude: 37.65, zoom: 9 };
 const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
@@ -63,8 +63,15 @@ const uhiLayer = (id: string): any => ({
   source: id,
   type: "fill",
   paint: {
-    "fill-color": "#f97316",
-    "fill-opacity": 0.6,
+    "fill-color": [
+      "match", ["get", "uhiiRank"],
+      "Very High", UHI_COLOR["Very High"],
+      "High",      UHI_COLOR["High"],
+      "Moderate",  UHI_COLOR["Moderate"],
+      "Low",       UHI_COLOR["Low"],
+      "transparent",
+    ],
+    "fill-opacity": 0.7,
   },
 });
 

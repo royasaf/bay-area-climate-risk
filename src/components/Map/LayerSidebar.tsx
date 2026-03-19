@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR } from "@/config/layers";
+import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR, UHI_COLOR } from "@/config/layers";
 
 const SLR_LEVELS = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5];
 
@@ -23,6 +23,12 @@ const LEGENDS: Record<string, { label: string; color: string }[]> = {
     { label: "High",     color: VULNERABILITY_COLOR["High social vulnerability"] },
     { label: "Moderate", color: VULNERABILITY_COLOR["Moderate social vulnerability"] },
     { label: "Low",      color: VULNERABILITY_COLOR["Low social vulnerability"] },
+  ],
+  "urban-heat-island": [
+    { label: "Very High", color: UHI_COLOR["Very High"] },
+    { label: "High",      color: UHI_COLOR["High"] },
+    { label: "Moderate",  color: UHI_COLOR["Moderate"] },
+    { label: "Low",       color: UHI_COLOR["Low"] },
   ],
 };
 

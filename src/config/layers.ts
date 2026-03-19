@@ -77,3 +77,10 @@ export const VULNERABILITY_COLOR: Record<string, string> = {
   "Moderate social vulnerability": "#c4b5fd",
   "Low social vulnerability":      "#ede9fe",
 };
+
+export const UHI_COLOR: Record<string, string> = {
+  "Very High": "#7f1d1d",
+  "High":      "#dc2626",
+  "Moderate":  "#fb923c",
+  "Low":       "#fde68a",
+};
