@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Map, { Source, Layer, Marker, Popup } from "react-map-gl/maplibre";
 import type { MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -167,6 +167,15 @@ const LAYER_DATA = {
   "urban-heat-island":    LAYERS.find((l) => l.id === "urban-heat-island")!,
 };
 
+// MapLibre layer ID for each data layer
+const FILL_ID: Record<string, string> = {
+  "wildfire-risk":           "wildfire-risk-fill",
+  "sea-level-rise":          "sea-level-rise-fill",
+  "community-vulnerability": "community-vulnerability-fill",
+  "calenviroscreen":         "calenviroscreen-fill",
+  "urban-heat-island":       "urban-heat-island-fill",
+};
+
 type CesHover = { lng: number; lat: number; props: Record<string, number | null> } | null;
 
 export default function MapView() {
@@ -199,6 +208,23 @@ export default function MapView() {
     setPin({ lng, lat });
     mapRef.current?.flyTo({ center: [lng, lat], zoom: 13, duration: 1200 });
   }
+
+  // Sync MapLibre layer z-order whenever layerOrder or visibility changes.
+  // JSX render order alone doesn't reorder already-added MapLibre layers;
+  // moveLayer() must be called explicitly. Moving each layer to the top in
+  // renderOrder sequence puts renderOrder[last] (= layerOrder[0]) on top.
+  useEffect(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
+    const apply = () => {
+      [...layerOrder].reverse().forEach((id) => {
+        const fillId = FILL_ID[id];
+        if (map.getLayer(fillId)) map.moveLayer(fillId);
+      });
+    };
+    if (map.isStyleLoaded()) apply();
+    else map.once("load", apply);
+  }, [layerOrder]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleMouseMove = useCallback((e: any) => {
