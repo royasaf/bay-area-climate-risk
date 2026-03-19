@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR, UHI_COLOR } from "@/config/layers";
+import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR } from "@/config/layers";
 
 const SLR_LEVELS = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5];
 
@@ -23,12 +23,6 @@ const LEGENDS: Record<string, { label: string; color: string }[]> = {
     { label: "High",     color: VULNERABILITY_COLOR["High social vulnerability"] },
     { label: "Moderate", color: VULNERABILITY_COLOR["Moderate social vulnerability"] },
     { label: "Low",      color: VULNERABILITY_COLOR["Low social vulnerability"] },
-  ],
-  "urban-heat-island": [
-    { label: "Very High  >45 °C·hr/day",   color: UHI_COLOR["Very High"] },
-    { label: "High       17–45 °C·hr/day",  color: UHI_COLOR["High"] },
-    { label: "Moderate   6–17 °C·hr/day",   color: UHI_COLOR["Moderate"] },
-    { label: "Low        <6 °C·hr/day",     color: UHI_COLOR["Low"] },
   ],
 };
 
@@ -99,6 +93,20 @@ export default function LayerSidebar({ visible, onToggle, slrLevel, onSlrLevelCh
                     </li>
                   ))}
                 </ul>
+              )}
+
+              {visible[layer.id] && layer.id === "urban-heat-island" && (
+                <div className="mt-1.5 ml-7">
+                  <div
+                    className="h-2 rounded-sm"
+                    style={{ background: "linear-gradient(to right, #16a34a, #84cc16, #facc15, #f97316, #dc2626, #7f1d1d)" }}
+                  />
+                  <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                    <span>0</span>
+                    <span>°C·hr/day</span>
+                    <span>122</span>
+                  </div>
+                </div>
               )}
             </li>
           ))}

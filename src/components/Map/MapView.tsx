@@ -6,7 +6,7 @@ import type { MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import LayerSidebar from "./LayerSidebar";
 import SearchBar from "./SearchBar";
-import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR, UHI_COLOR } from "@/config/layers";
+import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR } from "@/config/layers";
 
 const BAY_AREA = { longitude: -122.35, latitude: 37.65, zoom: 9 };
 const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
@@ -63,13 +63,16 @@ const uhiLayer = (id: string): any => ({
   source: id,
   type: "fill",
   paint: {
+    // Continuous green→yellow→orange→red gradient on raw degHourDay field
+    // Stops anchored at actual data percentiles: p0=0.06, p25=5.8, p50=16.6, p75=44.5, p90=77.5, max=122
     "fill-color": [
-      "match", ["get", "uhiiRank"],
-      "Very High", UHI_COLOR["Very High"],
-      "High",      UHI_COLOR["High"],
-      "Moderate",  UHI_COLOR["Moderate"],
-      "Low",       UHI_COLOR["Low"],
-      "transparent",
+      "interpolate", ["linear"], ["get", "degHourDay"],
+        0,    "#16a34a",  // green  — near zero UHI
+        6,    "#84cc16",  // lime
+        17,   "#facc15",  // yellow — median
+        45,   "#f97316",  // orange — p75
+        80,   "#dc2626",  // red    — p90
+        122,  "#7f1d1d",  // dark red — max
     ],
     "fill-opacity": 0.7,
   },
@@ -80,29 +83,6 @@ const slr        = LAYERS.find((l) => l.id === "sea-level-rise")!;
 const vulnerable = LAYERS.find((l) => l.id === "community-vulnerability")!;
 const uhi        = LAYERS.find((l) => l.id === "urban-heat-island")!;
 
-// Debug: log UHI data distribution when loaded
-async function logUhiStats() {
-  const res = await fetch(uhi.geojsonPath);
-  const data = await res.json();
-  const vals: number[] = data.features
-    .map((f: { properties: { degHourDay?: number } }) => f.properties.degHourDay)
-    .filter((v: unknown) => v != null && (v as number) > 0)
-    .sort((a: number, b: number) => a - b);
-  const n = vals.length;
-  const nullCount = data.features.length - n;
-  console.group("UHI degHourDay stats");
-  console.log("Total features:", data.features.length);
-  console.log("Null/zero values:", nullCount);
-  console.log("Min:", vals[0], "Max:", vals[n - 1]);
-  console.log("p25:", vals[Math.floor(n * 0.25)], "p50:", vals[Math.floor(n * 0.5)], "p75:", vals[Math.floor(n * 0.75)]);
-  console.log("Sample (first 10):", vals.slice(0, 10));
-  console.log("Thresholds used — Low:<6, Moderate:6-17, High:17-45, Very High:>45 (anchored at p25/p50/p75 of dataset)");
-  console.log("Counts by rank:", Object.fromEntries(
-    ["Low","Moderate","High","Very High"].map(r => [r, data.features.filter((f: {properties:{uhiiRank:string}}) => f.properties.uhiiRank === r).length])
-  ));
-  console.groupEnd();
-}
-if (typeof window !== "undefined") logUhiStats();
 
 export default function MapView() {
   const mapRef = useRef<MapRef>(null);
