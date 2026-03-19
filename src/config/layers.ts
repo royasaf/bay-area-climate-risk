@@ -1,6 +1,9 @@
+export type LayerGroup = "climate-risk" | "vulnerability";
+
 export interface LayerConfig {
   id: string;
   label: string;
+  group: LayerGroup;
   color: string;
   geojsonPath: string;
   source: {
@@ -16,6 +19,7 @@ export const LAYERS: LayerConfig[] = [
   {
     id: "wildfire-risk",
     label: "Wildfire Risk (WUI)",
+    group: "climate-risk",
     color: "#ef4444",
     geojsonPath: "/data/wildfire-risk.geojson",
     source: {
@@ -29,6 +33,7 @@ export const LAYERS: LayerConfig[] = [
   {
     id: "sea-level-rise",
     label: "Sea Level Rise",
+    group: "climate-risk",
     color: "#3b82f6",
     geojsonPath: "/data/sea-level-rise.geojson",
     source: {
@@ -42,6 +47,7 @@ export const LAYERS: LayerConfig[] = [
   {
     id: "community-vulnerability",
     label: "Flooding Community Vulnerability",
+    group: "vulnerability",
     color: "#a855f7",
     geojsonPath: "/data/community-vulnerability.geojson",
     source: {
@@ -55,6 +61,7 @@ export const LAYERS: LayerConfig[] = [
   {
     id: "calenviroscreen",
     label: "CalEnviroScreen 4.0",
+    group: "vulnerability",
     color: "#9333ea",
     geojsonPath: "/data/calenviroscreen.geojson",
     source: {
@@ -68,6 +75,7 @@ export const LAYERS: LayerConfig[] = [
   {
     id: "urban-heat-island",
     label: "Urban Heat Island Effect",
+    group: "climate-risk",
     color: "#f97316",
     geojsonPath: "/data/urban-heat-island.geojson",
     source: {

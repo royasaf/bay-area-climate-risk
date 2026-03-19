@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR } from "@/config/layers";
+import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR, type LayerGroup } from "@/config/layers";
 
 const SLR_LEVELS = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5];
 
@@ -38,11 +38,13 @@ export default function LayerSidebar({ visible, onToggle, slrLevel, onSlrLevelCh
         </h1>
       </div>
       <div className="px-4 py-3 overflow-y-auto">
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
-          Layers
-        </p>
+        {(["climate-risk", "vulnerability"] as LayerGroup[]).map((group) => (
+          <div key={group} className="mb-4">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+              {group === "climate-risk" ? "Climate Risk" : "Vulnerability"}
+            </p>
         <ul className="space-y-3">
-          {LAYERS.map((layer) => (
+          {LAYERS.filter((l) => l.group === group).map((layer) => (
             <li key={layer.id}>
               <label className="flex items-center gap-3 cursor-pointer group">
                 <input
@@ -126,6 +128,8 @@ export default function LayerSidebar({ visible, onToggle, slrLevel, onSlrLevelCh
             </li>
           ))}
         </ul>
+          </div>
+        ))}
       </div>
 
       <div className="mt-auto border-t border-gray-200">
