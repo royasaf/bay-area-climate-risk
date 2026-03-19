@@ -28,7 +28,6 @@ const LEGENDS: Record<string, { label: string; color: string }[]> = {
   ],
 };
 
-const GROUP_LABELS = { "climate-risk": "Climate Risk", "vulnerability": "Vulnerability" };
 
 export default function LayerSidebar({
   visible, onToggle, slrLevel, onSlrLevelChange, layerOrder, onReorder,
@@ -54,16 +53,9 @@ export default function LayerSidebar({
           Top = rendered on top.
         </p>
         <ul className="space-y-0">
-          {orderedLayers.map((layer, i) => {
-            const prevGroup = i > 0 ? orderedLayers[i - 1].group : null;
-            const showHeader = layer.group !== prevGroup;
+          {orderedLayers.map((layer) => {
             return (
               <li key={layer.id}>
-                {showHeader && (
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mt-3 mb-2 first:mt-0">
-                    {GROUP_LABELS[layer.group]}
-                  </p>
-                )}
                 <div
                   draggable
                   onDragStart={() => { dragId.current = layer.id; }}
