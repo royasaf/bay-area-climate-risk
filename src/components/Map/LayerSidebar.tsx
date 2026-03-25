@@ -40,7 +40,7 @@ export default function LayerSidebar({
   const orderedLayers = layerOrder.map((id) => LAYERS.find((l) => l.id === id)!);
 
   return (
-    <aside className="w-full md:w-60 md:shrink-0 bg-white md:border-r border-gray-200 flex flex-col z-10">
+    <aside className="w-full bg-white md:w-60 md:border-r border-gray-200 flex flex-col z-10">
       <div className="px-4 py-3 border-b border-gray-200">
         <h1 className="text-sm font-semibold text-gray-900 tracking-wide uppercase">
           Bay Area Climate Risk

@@ -315,7 +315,7 @@ export default function MapView() {
   return (
     <div className="flex h-screen w-screen">
       {/* Desktop: permanent left sidebar */}
-      <div className="hidden md:block">
+      <div className="hidden md:flex shrink-0">
         <LayerSidebar
           visible={visible}
           onToggle={toggleLayer}
