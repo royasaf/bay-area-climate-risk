@@ -329,7 +329,7 @@ export default function MapView() {
     <div className="flex h-screen w-screen">
       {/* Desktop: permanent left sidebar */}
       {!isMobile && (
-        <div style={{ width: 240, flexShrink: 0 }}>
+        <div style={{ width: 240, flexShrink: 0, height: "100%" }}>
           <LayerSidebar {...sidebarProps} />
         </div>
       )}
