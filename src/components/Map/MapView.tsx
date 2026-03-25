@@ -247,7 +247,7 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
   useEffect(() => {
     const check = () => {
       const mobile = window.innerWidth < 768;
-      if (mobile !== isMobile) setIsMobile(mobile);
+      setIsMobile(mobile);
       if (mobile) {
         setVisible((prev) => {
           const next = { ...prev };
@@ -259,7 +259,6 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function toggleLayer(id: string) {
@@ -395,16 +394,16 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
         </Map>
         <SearchBar onSelect={handleSearchSelect} />
 
-        {/* Mobile toggle button */}
+        {/* Mobile: fixed toggle button — always on top of map */}
         {isMobile && (
           <button
             onClick={() => setSidebarOpen((o) => !o)}
             style={{
-              position: "absolute", bottom: 24, right: 16, zIndex: 40,
+              position: "fixed", bottom: 24, right: 16, zIndex: 1000,
               background: "white", border: "1px solid #e5e7eb",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-              borderRadius: 999, padding: "8px 16px",
-              fontSize: 14, fontWeight: 500, color: "#374151",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+              borderRadius: 999, padding: "10px 20px",
+              fontSize: 15, fontWeight: 600, color: "#374151",
               display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
             }}
           >
@@ -412,10 +411,18 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
           </button>
         )}
 
-        {/* Mobile bottom sheet */}
+        {/* Mobile: backdrop */}
+        {isMobile && sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{ position: "fixed", inset: 0, zIndex: 998, background: "rgba(0,0,0,0.3)" }}
+          />
+        )}
+
+        {/* Mobile: bottom sheet */}
         {isMobile && (
           <div style={{
-            position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30,
+            position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 999,
             background: "white", borderRadius: "16px 16px 0 0",
             boxShadow: "0 -4px 24px rgba(0,0,0,0.15)",
             maxHeight: "70vh", overflowY: "auto",
