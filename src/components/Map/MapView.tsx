@@ -240,17 +240,25 @@ export default function MapView() {
   const [cesHover, setCesHover] = useState<HoverPopup>(null);
   const [ciHover, setCiHover] = useState<HoverPopup>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   // On mobile, default heavy layers off to prevent memory crashes
   useEffect(() => {
-    if (window.innerWidth < 768) {
+    if (isMobile) {
       setVisible((prev) => {
         const next = { ...prev };
         MOBILE_DEFAULT_OFF.forEach((id) => { next[id] = false; });
         return next;
       });
     }
-  }, []);
+  }, [isMobile]);
 
   function toggleLayer(id: string) {
     setVisible((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -312,19 +320,19 @@ export default function MapView() {
   // Render bottom-to-top: reverse so first item in layerOrder renders last (on top)
   const renderOrder = [...layerOrder].reverse();
 
+  const sidebarProps = {
+    visible, onToggle: toggleLayer, slrLevel,
+    onSlrLevelChange: setSlrLevel, layerOrder, onReorder: handleReorder,
+  };
+
   return (
     <div className="flex h-screen w-screen">
       {/* Desktop: permanent left sidebar */}
-      <div className="max-md:hidden flex shrink-0 w-60">
-        <LayerSidebar
-          visible={visible}
-          onToggle={toggleLayer}
-          slrLevel={slrLevel}
-          onSlrLevelChange={setSlrLevel}
-          layerOrder={layerOrder}
-          onReorder={handleReorder}
-        />
-      </div>
+      {!isMobile && (
+        <div style={{ width: 240, flexShrink: 0 }}>
+          <LayerSidebar {...sidebarProps} />
+        </div>
+      )}
 
       <div className="flex-1 relative">
         <Map
@@ -400,32 +408,34 @@ export default function MapView() {
         <SearchBar onSelect={handleSearchSelect} />
 
         {/* Mobile: toggle button */}
-        <button
-          onClick={() => setSidebarOpen((o) => !o)}
-          className="md:hidden absolute bottom-6 right-4 z-20 bg-white border border-gray-200 shadow-lg rounded-full px-4 py-2 text-sm font-medium text-gray-700 flex items-center gap-2"
-        >
-          <span>{sidebarOpen ? "✕" : "☰"}</span>
-          {sidebarOpen ? "Close" : "Layers"}
-        </button>
+        {isMobile && (
+          <button
+            onClick={() => setSidebarOpen((o) => !o)}
+            className="absolute bottom-6 right-4 z-20 bg-white border border-gray-200 shadow-lg rounded-full px-4 py-2 text-sm font-medium text-gray-700 flex items-center gap-2"
+          >
+            <span>{sidebarOpen ? "✕" : "☰"}</span>
+            {sidebarOpen ? "Close" : "Layers"}
+          </button>
+        )}
 
-        {/* Mobile: bottom sheet — single instance, shown/hidden via CSS */}
-        <div
-          className={`md:hidden absolute bottom-0 left-0 right-0 z-10 bg-white rounded-t-2xl shadow-2xl max-h-[70vh] overflow-y-auto transition-transform duration-300 ${
-            sidebarOpen ? "translate-y-0" : "translate-y-full"
-          }`}
-        >
-          <div className="flex justify-center pt-2 pb-1">
-            <div className="w-10 h-1 rounded-full bg-gray-300" />
+        {/* Mobile: bottom sheet */}
+        {isMobile && (
+          <div
+            style={{
+              position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 10,
+              background: "white", borderRadius: "16px 16px 0 0",
+              boxShadow: "0 -4px 24px rgba(0,0,0,0.15)",
+              maxHeight: "70vh", overflowY: "auto",
+              transform: sidebarOpen ? "translateY(0)" : "translateY(100%)",
+              transition: "transform 0.3s ease",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "center", padding: "8px 0 4px" }}>
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: "#d1d5db" }} />
+            </div>
+            <LayerSidebar {...sidebarProps} />
           </div>
-          <LayerSidebar
-            visible={visible}
-            onToggle={toggleLayer}
-            slrLevel={slrLevel}
-            onSlrLevelChange={setSlrLevel}
-            layerOrder={layerOrder}
-            onReorder={handleReorder}
-          />
-        </div>
+        )}
       </div>
     </div>
   );
