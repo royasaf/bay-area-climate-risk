@@ -55,7 +55,7 @@ export default function SearchBar({ onSelect }: Props) {
   }
 
   return (
-    <div ref={containerRef} className="absolute top-4 left-4 w-80 z-10">
+    <div ref={containerRef} className="absolute top-4 left-4 right-4 md:right-auto md:w-80 z-10">
       <input
         type="text"
         value={query}
