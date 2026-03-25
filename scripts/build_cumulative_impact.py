@@ -51,7 +51,7 @@ def area_weighted_join(base, overlay_gdf, value_col):
     # Map _id (integer) back to original index values (e.g. tract FIPS)
     id_to_idx = dict(zip(base_reset["_id"], base_reset[idx_col]))
     result.index = result.index.map(id_to_idx)
-    return result.reindex(base.index).fillna(0)
+    return result.reindex(base.index)  # NaN for tracts with no coverage
 
 
 print("Loading CalEnviroScreen tracts (base geometry)...")
@@ -65,20 +65,20 @@ ces["score_ces"] = ces["CIscoreP"].fillna(0)
 # ── 2. Urban Heat Island ───────────────────────────────────────────────────
 print("Joining Urban Heat Island...")
 uhi = fix_geoms(gpd.read_file(DATA / "urban-heat-island.geojson"))
-uhi["degHourDay"] = uhi["degHourDay"].fillna(0)
+# Do NOT fillna — keep NaN so area_weighted_join can distinguish no-coverage
 UHI_MAX = 122.3
 
 uhi_raw = area_weighted_join(ces, uhi, "degHourDay")
-ces["score_uhi"] = (uhi_raw / UHI_MAX * 100).clip(0, 100)
+ces["score_uhi"] = (uhi_raw / UHI_MAX * 100).clip(0, 100)  # NaN stays NaN
 print(f"  UHI mean={ces['score_uhi'].mean():.1f} max={ces['score_uhi'].max():.1f}")
 
 # ── 3. Wildfire Risk ───────────────────────────────────────────────────────
 print("Joining Wildfire risk...")
 wui = fix_geoms(gpd.read_file(DATA / "wildfire-risk.geojson"))
 HAZ_SCORE = {"Very High": 100.0, "High": 67.0, "Moderate": 33.0}
-wui["haz_score"] = wui["HAZ_DESC"].map(HAZ_SCORE).fillna(0.0)
+wui["haz_score"] = wui["HAZ_DESC"].map(HAZ_SCORE).fillna(0.0)  # unknown class → 0, not NaN
 
-ces["score_wui"] = area_weighted_join(ces, wui, "haz_score")
+ces["score_wui"] = area_weighted_join(ces, wui, "haz_score")  # NaN if no intersection
 print(f"  Wildfire mean={ces['score_wui'].mean():.1f} max={ces['score_wui'].max():.1f}")
 
 # ── 4. Sea Level Rise (≤1.5 ft scenario) ──────────────────────────────────
@@ -88,16 +88,31 @@ slr_15 = slr[slr["level"] <= 1.5].copy()
 slr_15["slr_presence"] = 1.0
 
 slr_frac = area_weighted_join(ces, slr_15, "slr_presence")
-ces["score_slr"] = (slr_frac * 100).clip(0, 100)
+ces["score_slr"] = (slr_frac * 100).clip(0, 100)  # NaN if no intersection
 print(f"  SLR mean={ces['score_slr'].mean():.1f} max={ces['score_slr'].max():.1f}")
 
-# ── 5. Composite weighted score ────────────────────────────────────────────
-ces["composite"] = (
-    0.50 * ces["score_ces"] +
-    0.20 * ces["score_uhi"] +
-    0.15 * ces["score_wui"] +
-    0.15 * ces["score_slr"]
-).round(1)
+# ── 5. Composite weighted score (re-normalise weights when data is missing) ──
+# Base weights (sum to 1.0)
+WEIGHTS = {
+    "score_ces": 0.50,
+    "score_uhi": 0.20,
+    "score_wui": 0.15,
+    "score_slr": 0.15,
+}
+
+def compute_composite(row):
+    total_w = 0.0
+    total_v = 0.0
+    for col, w in WEIGHTS.items():
+        v = row[col]
+        if not np.isnan(v):
+            total_w += w
+            total_v += w * v
+    if total_w == 0:
+        return np.nan
+    return round(total_v / total_w, 1)
+
+ces["composite"] = ces[list(WEIGHTS.keys())].apply(compute_composite, axis=1)
 
 print(f"\nComposite score distribution:")
 print(ces["composite"].describe().round(1))

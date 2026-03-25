@@ -180,23 +180,26 @@ function CesPopup({ props }: { props: Record<string, any> }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CumulativePopup({ props }: { props: Record<string, any> }) {
   const components = [
-    { label: "CalEnviroScreen",  score: props.score_ces,  weight: "50%" },
-    { label: "Urban Heat Island", score: props.score_uhi, weight: "20%" },
-    { label: "Wildfire Risk",    score: props.score_wui,  weight: "15%" },
-    { label: "Sea Level Rise",   score: props.score_slr,  weight: "15%" },
+    { label: "CalEnviroScreen",   score: props.score_ces,  weight: "50%" },
+    { label: "Urban Heat Island", score: props.score_uhi,  weight: "20%" },
+    { label: "Wildfire Risk",     score: props.score_wui,  weight: "15%" },
+    { label: "Sea Level Rise",    score: props.score_slr,  weight: "15%" },
   ];
+  const fmt = (v: number | null | undefined) =>
+    v == null || isNaN(v as number) ? "N/A" : (v as number).toFixed(0);
   return (
     <div className="text-xs text-gray-800 min-w-[200px]">
       <p className="font-semibold text-red-800 mb-1">
-        Cumulative Impact: {props.composite?.toFixed(1)}
-        <span className="font-normal text-gray-500 ml-1">/ 75</span>
+        Cumulative Risk Score: {props.composite?.toFixed(1) ?? "N/A"}
       </p>
       <div className="border-t border-gray-200 pt-1">
         <p className="font-medium text-gray-600 mb-0.5">Component scores</p>
         {components.map(({ label, score, weight }) => (
           <div key={label} className="flex justify-between gap-4">
             <span>{label} <span className="text-gray-400">({weight})</span></span>
-            <span className="font-medium">{score?.toFixed(0)}</span>
+            <span className={`font-medium ${fmt(score) === "N/A" ? "text-gray-400" : ""}`}>
+              {fmt(score)}
+            </span>
           </div>
         ))}
       </div>
