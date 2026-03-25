@@ -240,25 +240,24 @@ export default function MapView() {
   const [cesHover, setCesHover] = useState<HoverPopup>(null);
   const [ciHover, setCiHover] = useState<HoverPopup>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
+    const check = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setVisible((prev) => {
+          const next = { ...prev };
+          MOBILE_DEFAULT_OFF.forEach((id) => { next[id] = false; });
+          return next;
+        });
+      }
+    };
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
-
-  // On mobile, default heavy layers off to prevent memory crashes
-  useEffect(() => {
-    if (isMobile) {
-      setVisible((prev) => {
-        const next = { ...prev };
-        MOBILE_DEFAULT_OFF.forEach((id) => { next[id] = false; });
-        return next;
-      });
-    }
-  }, [isMobile]);
 
   function toggleLayer(id: string) {
     setVisible((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -327,8 +326,8 @@ export default function MapView() {
 
   return (
     <div className="flex h-screen w-screen">
-      {/* Desktop: permanent left sidebar */}
-      {!isMobile && (
+      {/* Desktop: permanent left sidebar — only render once isMobile is known */}
+      {isMobile === false && (
         <div style={{ width: 240, flexShrink: 0, height: "100%" }}>
           <LayerSidebar {...sidebarProps} />
         </div>
@@ -408,7 +407,7 @@ export default function MapView() {
         <SearchBar onSelect={handleSearchSelect} />
 
         {/* Mobile: toggle button */}
-        {isMobile && (
+        {isMobile === true && (
           <button
             onClick={() => setSidebarOpen((o) => !o)}
             className="absolute bottom-6 right-4 z-20 bg-white border border-gray-200 shadow-lg rounded-full px-4 py-2 text-sm font-medium text-gray-700 flex items-center gap-2"
@@ -419,7 +418,7 @@ export default function MapView() {
         )}
 
         {/* Mobile: bottom sheet */}
-        {isMobile && (
+        {isMobile === true && (
           <div
             style={{
               position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 10,
