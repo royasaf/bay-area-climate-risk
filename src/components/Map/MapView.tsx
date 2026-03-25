@@ -177,6 +177,33 @@ function CesPopup({ props }: { props: Record<string, any> }) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function CumulativePopup({ props }: { props: Record<string, any> }) {
+  const components = [
+    { label: "CalEnviroScreen",  score: props.score_ces,  weight: "50%" },
+    { label: "Urban Heat Island", score: props.score_uhi, weight: "20%" },
+    { label: "Wildfire Risk",    score: props.score_wui,  weight: "15%" },
+    { label: "Sea Level Rise",   score: props.score_slr,  weight: "15%" },
+  ];
+  return (
+    <div className="text-xs text-gray-800 min-w-[200px]">
+      <p className="font-semibold text-red-800 mb-1">
+        Cumulative Impact: {props.composite?.toFixed(1)}
+        <span className="font-normal text-gray-500 ml-1">/ 75</span>
+      </p>
+      <div className="border-t border-gray-200 pt-1">
+        <p className="font-medium text-gray-600 mb-0.5">Component scores</p>
+        {components.map(({ label, score, weight }) => (
+          <div key={label} className="flex justify-between gap-4">
+            <span>{label} <span className="text-gray-400">({weight})</span></span>
+            <span className="font-medium">{score?.toFixed(0)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const LAYER_DATA = {
   "wildfire-risk":        LAYERS.find((l) => l.id === "wildfire-risk")!,
   "sea-level-rise":       LAYERS.find((l) => l.id === "sea-level-rise")!,
@@ -196,7 +223,7 @@ const FILL_ID: Record<string, string> = {
   "cumulative-impact":       "cumulative-impact-fill",
 };
 
-type CesHover = { lng: number; lat: number; props: Record<string, number | null> } | null;
+type HoverPopup = { lng: number; lat: number; props: Record<string, number | null> } | null;
 
 export default function MapView() {
   const mapRef = useRef<MapRef>(null);
@@ -207,7 +234,8 @@ export default function MapView() {
   const [layerOrder, setLayerOrder] = useState(LAYERS.map((l) => l.id));
   const [slrLevel, setSlrLevel] = useState(1.5);
   const [pin, setPin] = useState<{ lng: number; lat: number } | null>(null);
-  const [cesHover, setCesHover] = useState<CesHover>(null);
+  const [cesHover, setCesHover] = useState<HoverPopup>(null);
+  const [ciHover, setCiHover] = useState<HoverPopup>(null);
 
   function toggleLayer(id: string) {
     setVisible((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -249,10 +277,20 @@ export default function MapView() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleMouseMove = useCallback((e: any) => {
     const feat = e.features?.[0];
-    if (feat && feat.properties?.CIscore != null) {
+    if (!feat) {
+      setCesHover(null);
+      setCiHover(null);
+      return;
+    }
+    if (feat.layer?.id === "cumulative-impact-fill") {
+      setCiHover({ lng: e.lngLat.lng, lat: e.lngLat.lat, props: feat.properties });
+      setCesHover(null);
+    } else if (feat.properties?.CIscore != null) {
       setCesHover({ lng: e.lngLat.lng, lat: e.lngLat.lat, props: feat.properties });
+      setCiHover(null);
     } else {
       setCesHover(null);
+      setCiHover(null);
     }
   }, []);
 
@@ -274,9 +312,12 @@ export default function MapView() {
           ref={mapRef}
           initialViewState={BAY_AREA}
           mapStyle={OPENFREEMAP_STYLE}
-          interactiveLayerIds={visible["calenviroscreen"] ? ["calenviroscreen-fill"] : []}
+          interactiveLayerIds={[
+            ...(visible["calenviroscreen"] ? ["calenviroscreen-fill"] : []),
+            ...(visible["cumulative-impact"] ? ["cumulative-impact-fill"] : []),
+          ]}
           onMouseMove={handleMouseMove}
-          onMouseLeave={() => setCesHover(null)}
+          onMouseLeave={() => { setCesHover(null); setCiHover(null); }}
         >
           {renderOrder.map((id) => {
             if (!visible[id]) return null;
@@ -322,6 +363,17 @@ export default function MapView() {
               offset={8}
             >
               <CesPopup props={cesHover.props} />
+            </Popup>
+          )}
+          {ciHover && (
+            <Popup
+              longitude={ciHover.lng}
+              latitude={ciHover.lat}
+              closeButton={false}
+              anchor="bottom-left"
+              offset={8}
+            >
+              <CumulativePopup props={ciHover.props} />
             </Popup>
           )}
           {pin && <Marker longitude={pin.lng} latitude={pin.lat} />}
