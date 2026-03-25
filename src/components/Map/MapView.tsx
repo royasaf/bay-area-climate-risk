@@ -240,12 +240,12 @@ export default function MapView() {
   const [cesHover, setCesHover] = useState<HoverPopup>(null);
   const [ciHover, setCiHover] = useState<HoverPopup>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const check = () => {
       const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
+      if (mobile !== isMobile) setIsMobile(mobile);
       if (mobile) {
         setVisible((prev) => {
           const next = { ...prev };
@@ -257,6 +257,7 @@ export default function MapView() {
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function toggleLayer(id: string) {
@@ -325,15 +326,27 @@ export default function MapView() {
   };
 
   return (
-    <div className="flex h-screen w-screen">
-      {/* Desktop: permanent left sidebar — only render once isMobile is known */}
-      {isMobile === false && (
-        <div style={{ width: 240, flexShrink: 0, height: "100%" }}>
-          <LayerSidebar {...sidebarProps} />
-        </div>
-      )}
+    <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
 
-      <div className="flex-1 relative">
+      {/* Sidebar: left panel on desktop, fixed bottom sheet on mobile */}
+      <div style={isMobile ? {
+        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30,
+        transform: sidebarOpen ? "translateY(0)" : "translateY(100%)",
+        transition: "transform 0.3s ease",
+        maxHeight: "70vh",
+      } : {
+        width: 240, flexShrink: 0, height: "100%",
+      }}>
+        {isMobile && (
+          <div style={{ display: "flex", justifyContent: "center", padding: "8px 0 4px", background: "white", borderRadius: "16px 16px 0 0" }}>
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: "#d1d5db" }} />
+          </div>
+        )}
+        <LayerSidebar {...sidebarProps} />
+      </div>
+
+      {/* Map area */}
+      <div style={{ flex: 1, position: "relative" }}>
         <Map
           ref={mapRef}
           initialViewState={BAY_AREA}
@@ -381,24 +394,12 @@ export default function MapView() {
             return null;
           })}
           {cesHover && (
-            <Popup
-              longitude={cesHover.lng}
-              latitude={cesHover.lat}
-              closeButton={false}
-              anchor="bottom-left"
-              offset={8}
-            >
+            <Popup longitude={cesHover.lng} latitude={cesHover.lat} closeButton={false} anchor="bottom-left" offset={8}>
               <CesPopup props={cesHover.props} />
             </Popup>
           )}
           {ciHover && (
-            <Popup
-              longitude={ciHover.lng}
-              latitude={ciHover.lat}
-              closeButton={false}
-              anchor="bottom-left"
-              offset={8}
-            >
+            <Popup longitude={ciHover.lng} latitude={ciHover.lat} closeButton={false} anchor="bottom-left" offset={8}>
               <CumulativePopup props={ciHover.props} />
             </Popup>
           )}
@@ -406,34 +407,21 @@ export default function MapView() {
         </Map>
         <SearchBar onSelect={handleSearchSelect} />
 
-        {/* Mobile: toggle button */}
-        {isMobile === true && (
+        {/* Mobile toggle button */}
+        {isMobile && (
           <button
             onClick={() => setSidebarOpen((o) => !o)}
-            className="absolute bottom-6 right-4 z-20 bg-white border border-gray-200 shadow-lg rounded-full px-4 py-2 text-sm font-medium text-gray-700 flex items-center gap-2"
-          >
-            <span>{sidebarOpen ? "✕" : "☰"}</span>
-            {sidebarOpen ? "Close" : "Layers"}
-          </button>
-        )}
-
-        {/* Mobile: bottom sheet */}
-        {isMobile === true && (
-          <div
             style={{
-              position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 10,
-              background: "white", borderRadius: "16px 16px 0 0",
-              boxShadow: "0 -4px 24px rgba(0,0,0,0.15)",
-              maxHeight: "70vh", overflowY: "auto",
-              transform: sidebarOpen ? "translateY(0)" : "translateY(100%)",
-              transition: "transform 0.3s ease",
+              position: "absolute", bottom: 24, right: 16, zIndex: 40,
+              background: "white", border: "1px solid #e5e7eb",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              borderRadius: 999, padding: "8px 16px",
+              fontSize: 14, fontWeight: 500, color: "#374151",
+              display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "center", padding: "8px 0 4px" }}>
-              <div style={{ width: 40, height: 4, borderRadius: 2, background: "#d1d5db" }} />
-            </div>
-            <LayerSidebar {...sidebarProps} />
-          </div>
+            {sidebarOpen ? "✕ Close" : "☰ Layers"}
+          </button>
         )}
       </div>
     </div>
