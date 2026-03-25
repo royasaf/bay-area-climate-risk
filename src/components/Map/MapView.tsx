@@ -225,6 +225,9 @@ const FILL_ID: Record<string, string> = {
 
 type HoverPopup = { lng: number; lat: number; props: Record<string, number | null> } | null;
 
+// Heavy layers defaulted off on mobile to avoid memory crashes (wildfire is 20 MB)
+const MOBILE_DEFAULT_OFF = new Set(["wildfire-risk", "sea-level-rise", "community-vulnerability"]);
+
 export default function MapView() {
   const mapRef = useRef<MapRef>(null);
   const [visible, setVisible] = useState<Record<string, boolean>>(
@@ -237,6 +240,17 @@ export default function MapView() {
   const [cesHover, setCesHover] = useState<HoverPopup>(null);
   const [ciHover, setCiHover] = useState<HoverPopup>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // On mobile, default heavy layers off to prevent memory crashes
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setVisible((prev) => {
+        const next = { ...prev };
+        MOBILE_DEFAULT_OFF.forEach((id) => { next[id] = false; });
+        return next;
+      });
+    }
+  }, []);
 
   function toggleLayer(id: string) {
     setVisible((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -300,8 +314,8 @@ export default function MapView() {
 
   return (
     <div className="flex h-screen w-screen">
-      {/* Desktop sidebar */}
-      <div className="hidden md:flex">
+      {/* Desktop: permanent left sidebar */}
+      <div className="hidden md:block">
         <LayerSidebar
           visible={visible}
           onToggle={toggleLayer}
@@ -394,22 +408,24 @@ export default function MapView() {
           {sidebarOpen ? "Close" : "Layers"}
         </button>
 
-        {/* Mobile: bottom sheet */}
-        {sidebarOpen && (
-          <div className="md:hidden absolute bottom-0 left-0 right-0 z-10 bg-white rounded-t-2xl shadow-2xl max-h-[70vh] overflow-y-auto">
-            <div className="flex justify-center pt-2 pb-1">
-              <div className="w-10 h-1 rounded-full bg-gray-300" />
-            </div>
-            <LayerSidebar
-              visible={visible}
-              onToggle={toggleLayer}
-              slrLevel={slrLevel}
-              onSlrLevelChange={setSlrLevel}
-              layerOrder={layerOrder}
-              onReorder={handleReorder}
-            />
+        {/* Mobile: bottom sheet — single instance, shown/hidden via CSS */}
+        <div
+          className={`md:hidden absolute bottom-0 left-0 right-0 z-10 bg-white rounded-t-2xl shadow-2xl max-h-[70vh] overflow-y-auto transition-transform duration-300 ${
+            sidebarOpen ? "translate-y-0" : "translate-y-full"
+          }`}
+        >
+          <div className="flex justify-center pt-2 pb-1">
+            <div className="w-10 h-1 rounded-full bg-gray-300" />
           </div>
-        )}
+          <LayerSidebar
+            visible={visible}
+            onToggle={toggleLayer}
+            slrLevel={slrLevel}
+            onSlrLevelChange={setSlrLevel}
+            layerOrder={layerOrder}
+            onReorder={handleReorder}
+          />
+        </div>
       </div>
     </div>
   );
