@@ -330,22 +330,8 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
   return (
     <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
 
-      {/* Sidebar: left panel on desktop, fixed bottom sheet on mobile */}
-      <div style={isMobile ? {
-        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30,
-        transform: sidebarOpen ? "translateY(0)" : "translateY(100%)",
-        transition: "transform 0.3s ease",
-        maxHeight: "70vh",
-      } : {
-        width: 240, flexShrink: 0, height: "100%",
-      }}>
-        {isMobile && (
-          <div style={{ display: "flex", justifyContent: "center", padding: "8px 0 4px", background: "white", borderRadius: "16px 16px 0 0" }}>
-            <div style={{ width: 40, height: 4, borderRadius: 2, background: "#d1d5db" }} />
-          </div>
-        )}
-        <LayerSidebar {...sidebarProps} />
-      </div>
+      {/* Desktop: sidebar as direct flex child */}
+      {!isMobile && <LayerSidebar {...sidebarProps} />}
 
       {/* Map area */}
       <div style={{ flex: 1, position: "relative" }}>
@@ -424,6 +410,23 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
           >
             {sidebarOpen ? "✕ Close" : "☰ Layers"}
           </button>
+        )}
+
+        {/* Mobile bottom sheet */}
+        {isMobile && (
+          <div style={{
+            position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 30,
+            background: "white", borderRadius: "16px 16px 0 0",
+            boxShadow: "0 -4px 24px rgba(0,0,0,0.15)",
+            maxHeight: "70vh", overflowY: "auto",
+            transform: sidebarOpen ? "translateY(0)" : "translateY(100%)",
+            transition: "transform 0.3s ease",
+          }}>
+            <div style={{ display: "flex", justifyContent: "center", padding: "8px 0 4px" }}>
+              <div style={{ width: 40, height: 4, borderRadius: 2, background: "#d1d5db" }} />
+            </div>
+            <LayerSidebar {...sidebarProps} />
+          </div>
         )}
       </div>
     </div>
