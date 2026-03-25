@@ -124,6 +124,13 @@ const POLLUTION_LABELS: Record<string, string> = {
   leadP:    "Lead",
 };
 
+function formatTract(tract: number | string | null | undefined): string {
+  if (tract == null) return "—";
+  const s = String(tract).padStart(11, "0");
+  const num = s.slice(5); // last 6 digits = tract number
+  return `${parseInt(num.slice(0, 4))}.${num.slice(4)}`;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CesPopup({ props }: { props: Record<string, any> }) {
   const top3 = Object.entries(POLLUTION_LABELS)
@@ -133,6 +140,7 @@ function CesPopup({ props }: { props: Record<string, any> }) {
 
   return (
     <div className="text-xs text-gray-800 min-w-[200px]">
+      <p className="text-gray-400 mb-1">Census Tract {formatTract(props.tract)}</p>
       <p className="font-semibold text-purple-800 mb-1">
         CES Score: {props.CIscore?.toFixed(1) ?? "N/A"}
         <span className="font-normal text-gray-500 ml-1">
@@ -189,6 +197,7 @@ function CumulativePopup({ props }: { props: Record<string, any> }) {
     v == null || isNaN(v as number) ? "N/A" : (v as number).toFixed(0);
   return (
     <div className="text-xs text-gray-800 min-w-[200px]">
+      <p className="text-gray-400 mb-1">Census Tract {formatTract(props.tract)}</p>
       <p className="font-semibold text-red-800 mb-1">
         Cumulative Risk Score: {props.composite?.toFixed(1) ?? "N/A"}
       </p>
