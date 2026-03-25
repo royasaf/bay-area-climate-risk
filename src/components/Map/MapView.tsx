@@ -77,6 +77,24 @@ const uhiLayer = (id: string): any => ({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const cumulativeLayer = (id: string): any => ({
+  id: "cumulative-impact-fill",
+  source: id,
+  type: "fill",
+  paint: {
+    "fill-color": [
+      "interpolate", ["linear"], ["get", "composite"],
+      0,    "#fef9c3",
+      11.7, "#fde047",
+      20.7, "#f97316",
+      32.1, "#dc2626",
+      74.4, "#450a0a",
+    ],
+    "fill-opacity": 0.75,
+  },
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cesLayer = (id: string): any => ({
   id: "calenviroscreen-fill",
   source: id,
@@ -165,6 +183,7 @@ const LAYER_DATA = {
   "community-vulnerability": LAYERS.find((l) => l.id === "community-vulnerability")!,
   "calenviroscreen":      LAYERS.find((l) => l.id === "calenviroscreen")!,
   "urban-heat-island":    LAYERS.find((l) => l.id === "urban-heat-island")!,
+  "cumulative-impact":    LAYERS.find((l) => l.id === "cumulative-impact")!,
 };
 
 // MapLibre layer ID for each data layer
@@ -174,6 +193,7 @@ const FILL_ID: Record<string, string> = {
   "community-vulnerability": "community-vulnerability-fill",
   "calenviroscreen":         "calenviroscreen-fill",
   "urban-heat-island":       "urban-heat-island-fill",
+  "cumulative-impact":       "cumulative-impact-fill",
 };
 
 type CesHover = { lng: number; lat: number; props: Record<string, number | null> } | null;
@@ -284,6 +304,11 @@ export default function MapView() {
             if (id === "urban-heat-island") return (
               <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
                 <Layer {...uhiLayer(id)} />
+              </Source>
+            );
+            if (id === "cumulative-impact") return (
+              <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
+                <Layer {...cumulativeLayer(id)} />
               </Source>
             );
             return null;

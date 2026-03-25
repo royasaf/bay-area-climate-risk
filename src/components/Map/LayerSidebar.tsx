@@ -122,6 +122,17 @@ export default function LayerSidebar({
                     </ul>
                   )}
 
+                  {visible[layer.id] && layer.id === "cumulative-impact" && (
+                    <div className="mt-1.5 ml-8">
+                      <div className="h-2 rounded-sm" style={{ background: "linear-gradient(to right, #fef9c3, #fde047, #f97316, #dc2626, #450a0a)" }} />
+                      <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                        <span>Low (0)</span>
+                        <span>Score</span>
+                        <span>High (75)</span>
+                      </div>
+                    </div>
+                  )}
+
                   {visible[layer.id] && layer.id === "calenviroscreen" && (
                     <div className="mt-1.5 ml-8">
                       <div className="h-2 rounded-sm" style={{ background: "linear-gradient(to right, #f3e8ff, #c084fc, #9333ea, #6b21a8, #3b0764)" }} />

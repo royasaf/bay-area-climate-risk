@@ -73,6 +73,20 @@ export const LAYERS: LayerConfig[] = [
     methodology: "OEHHA scores every California census tract using 21 indicators split into two groups: Pollution Burden (air quality, drinking water contaminants, pesticides, toxic releases, traffic, cleanup sites) and Population Characteristics (health outcomes like asthma and cardiovascular disease, plus socioeconomic factors like poverty and educational attainment). The two group scores are multiplied to produce the overall CES score, so that disadvantaged communities facing multiple stressors rank highest.",
   },
   {
+    id: "cumulative-impact",
+    label: "Cumulative Climate Impact",
+    group: "vulnerability",
+    color: "#b91c1c",
+    geojsonPath: "/data/cumulative-impact.geojson",
+    source: {
+      name: "Composite derived layer",
+      organization: "This dashboard",
+      url: "#",
+      year: "2024",
+    },
+    methodology: "Weighted composite of four data layers by census tract: CalEnviroScreen 4.0 percentile (50%), Urban Heat Island intensity (20%), Wildfire hazard class (15%), and Sea Level Rise flood fraction at 1.5 ft (15%). Each component is normalised to 0–100 before weighting. Higher scores indicate communities facing multiple, compounding climate and environmental burdens.",
+  },
+  {
     id: "urban-heat-island",
     label: "Urban Heat Island Effect",
     group: "climate-risk",
