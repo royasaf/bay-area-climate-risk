@@ -277,13 +277,13 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
     setVisible((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
-  function handleReorder(fromId: string, toId: string) {
+  function handleReorder(id: string, direction: "up" | "down") {
     setLayerOrder((prev) => {
       const next = [...prev];
-      const fromIdx = next.indexOf(fromId);
-      const toIdx = next.indexOf(toId);
-      next.splice(fromIdx, 1);
-      next.splice(toIdx, 0, fromId);
+      const idx = next.indexOf(id);
+      const swap = direction === "up" ? idx - 1 : idx + 1;
+      if (swap < 0 || swap >= next.length) return prev;
+      [next[idx], next[swap]] = [next[swap], next[idx]];
       return next;
     });
   }

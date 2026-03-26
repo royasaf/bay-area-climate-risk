@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR } from "@/config/layers";
 
 const SLR_LEVELS = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5];
@@ -11,7 +11,7 @@ interface Props {
   slrLevel: number;
   onSlrLevelChange: (level: number) => void;
   layerOrder: string[];
-  onReorder: (fromId: string, toId: string) => void;
+  onReorder: (id: string, direction: "up" | "down") => void;
 }
 
 const LEGENDS: Record<string, { label: string; color: string }[]> = {
@@ -34,7 +34,6 @@ export default function LayerSidebar({
 }: Props) {
   const [showSources, setShowSources] = useState(false);
   const [showMethodology, setShowMethodology] = useState(false);
-  const dragId = useRef<string | null>(null);
 
   // Render layers in sidebar order; inject group header when group changes
   const orderedLayers = layerOrder.map((id) => LAYERS.find((l) => l.id === id)!);
@@ -49,30 +48,29 @@ export default function LayerSidebar({
 
       <div className="px-4 py-3 overflow-y-auto flex-1">
         <p className="text-xs text-gray-400 mb-3 leading-snug">
-          Drag <span className="font-medium text-gray-500">⠿</span> to reorder layers.
-          Top = rendered on top.
+          Use ↑↓ to reorder layers. Top = rendered on top.
         </p>
         <ul className="space-y-0">
-          {orderedLayers.map((layer) => {
+          {orderedLayers.map((layer, idx) => {
             return (
               <li key={layer.id}>
-                <div
-                  draggable
-                  onDragStart={() => { dragId.current = layer.id; }}
-                  onDragEnter={() => {
-                    if (dragId.current && dragId.current !== layer.id) {
-                      onReorder(dragId.current, layer.id);
-                      dragId.current = layer.id;
-                    }
-                  }}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDragEnd={() => { dragId.current = null; }}
-                  className="mb-3 cursor-grab active:cursor-grabbing"
-                >
-                  <label className="flex items-center gap-2 cursor-pointer group">
-                    <span className="text-gray-300 hover:text-gray-500 select-none text-base leading-none shrink-0">
-                      ⠿
-                    </span>
+                <div className="mb-3">
+                  <div className="flex items-start gap-1">
+                    <div className="flex flex-col shrink-0 mt-0.5">
+                      <button
+                        onClick={() => onReorder(layer.id, "up")}
+                        disabled={idx === 0}
+                        className="text-gray-300 hover:text-gray-600 disabled:opacity-20 disabled:cursor-default leading-none p-0 text-xs"
+                        aria-label="Move layer up"
+                      >▲</button>
+                      <button
+                        onClick={() => onReorder(layer.id, "down")}
+                        disabled={idx === orderedLayers.length - 1}
+                        className="text-gray-300 hover:text-gray-600 disabled:opacity-20 disabled:cursor-default leading-none p-0 text-xs"
+                        aria-label="Move layer down"
+                      >▼</button>
+                    </div>
+                  <label className="flex items-center gap-2 cursor-pointer group flex-1">
                     <input
                       type="checkbox"
                       checked={visible[layer.id] ?? true}
@@ -88,6 +86,7 @@ export default function LayerSidebar({
                       {layer.label}
                     </span>
                   </label>
+                  </div>
 
                   {layer.id === "sea-level-rise" && visible[layer.id] && (
                     <div className="mt-2 ml-8">
@@ -156,6 +155,7 @@ export default function LayerSidebar({
                   )}
                 </div>
               </li>
+
             );
           })}
         </ul>
