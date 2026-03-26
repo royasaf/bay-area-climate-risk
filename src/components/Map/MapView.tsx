@@ -243,8 +243,7 @@ const MOBILE_DEFAULT_OFF = new Set(["wildfire-risk", "sea-level-rise", "communit
 export default function MapView({ initialIsMobile = false }: { initialIsMobile?: boolean }) {
   const mapRef = useRef<MapRef>(null);
   const [visible, setVisible] = useState<Record<string, boolean>>(() => {
-    const base = Object.fromEntries(LAYERS.map((l) => [l.id, true]));
-    if (initialIsMobile) MOBILE_DEFAULT_OFF.forEach((id) => { base[id] = false; });
+    const base = Object.fromEntries(LAYERS.map((l) => [l.id, l.id === "cumulative-impact"]));
     return base;
   });
   // Top of list = rendered on top of the map (rendered last in MapLibre)
