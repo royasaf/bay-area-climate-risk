@@ -238,7 +238,7 @@ const FILL_ID: Record<string, string> = {
 type HoverPopup = { lng: number; lat: number; props: Record<string, number | null> } | null;
 
 // Heavy layers defaulted off on mobile to avoid memory crashes (wildfire is 20 MB)
-const MOBILE_DEFAULT_OFF = new Set(["wildfire-risk", "sea-level-rise", "community-vulnerability"]);
+const MOBILE_DEFAULT_OFF = new Set(["sea-level-rise"]);
 
 export default function MapView({ initialIsMobile = false }: { initialIsMobile?: boolean }) {
   const mapRef = useRef<MapRef>(null);

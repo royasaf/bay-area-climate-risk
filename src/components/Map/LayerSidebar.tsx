@@ -16,7 +16,7 @@ interface Props {
 }
 
 // Layers too large to load on mobile
-const MOBILE_DISABLED = new Set(["sea-level-rise", "wildfire-risk", "community-vulnerability"]);
+const MOBILE_DISABLED = new Set(["sea-level-rise"]);
 
 const LEGENDS: Record<string, { label: string; color: string }[]> = {
   "wildfire-risk": [
