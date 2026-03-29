@@ -98,7 +98,7 @@ export const LAYERS: LayerConfig[] = [
       url: "#",
       year: "2024",
     },
-    methodology: "Weighted composite of four data layers by census tract: CalEnviroScreen 4.0 percentile (50%), Urban Heat Island intensity (20%), Wildfire hazard class (15%), and Sea Level Rise flood fraction at 1.5 ft (15%). Each component is normalised to 0–100 before weighting. Where a factor has no coverage for a tract, it is excluded and the remaining weights are renormalised. Higher scores indicate communities facing compounding structural and climate burdens.",
+    methodology: "Weighted composite of five data layers by census tract: CalEnviroScreen 4.0 percentile (35%), Wildfire hazard class (20%), Sea Level Rise flood fraction at 1.5 ft (20%), Urban Heat Island intensity (15%), and Air Quality burden (10%, derived from ozone, PM2.5, diesel, and traffic percentiles in CalEnviroScreen). Each component is normalised to 0–100 before weighting. Where a factor has no coverage for a tract, it is excluded and the remaining weights are renormalised. Higher scores indicate communities facing compounding structural and climate burdens.",
   },
 ];
 

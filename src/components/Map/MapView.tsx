@@ -188,10 +188,11 @@ function CesPopup({ props }: { props: Record<string, any> }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CumulativePopup({ props }: { props: Record<string, any> }) {
   const components = [
-    { label: "CalEnviroScreen",   score: props.score_ces,  weight: "50%" },
-    { label: "Urban Heat Island", score: props.score_uhi,  weight: "20%" },
-    { label: "Wildfire Risk",     score: props.score_wui,  weight: "15%" },
-    { label: "Sea Level Rise",    score: props.score_slr,  weight: "15%" },
+    { label: "CalEnviroScreen",   score: props.score_ces,  weight: "35%" },
+    { label: "Wildfire Risk",     score: props.score_wui,  weight: "20%" },
+    { label: "Flood / SLR",       score: props.score_slr,  weight: "20%" },
+    { label: "Urban Heat Island", score: props.score_uhi,  weight: "15%" },
+    { label: "Air Quality",       score: props.score_aq,   weight: "10%" },
   ];
   const fmt = (v: number | null | undefined) =>
     v == null || isNaN(v as number) ? "N/A" : (v as number).toFixed(0);

@@ -2,10 +2,11 @@
 """
 Build cumulative climate impact score by census tract.
 Weights:
-  - CalEnviroScreen percentile (equity + pollution burden): 50%
-  - Urban Heat Island (normalized):                         20%
-  - Wildfire risk (hazard class → score):                   15%
-  - Sea level rise presence (any scenario ≤1.5ft):          15%
+  - CalEnviroScreen percentile (equity + pollution burden): 35%
+  - Wildfire risk (hazard class → score):                   20%
+  - Sea level rise / flood exposure (≤1.5ft):               20%
+  - Urban Heat Island (normalized):                         15%
+  - Air quality (ozone, PM2.5, diesel, traffic percentiles): 10%
 Output: public/data/cumulative-impact.geojson
 """
 import numpy as np
@@ -62,6 +63,11 @@ print(f"  {len(ces)} tracts")
 # ── 1. CES percentile score (0–100) ───────────────────────────────────────
 ces["score_ces"] = ces["CIscoreP"].fillna(0)
 
+# ── 1b. Air quality sub-score: average of ozone, PM2.5, diesel, traffic percentiles ──
+AQ_COLS = ["ozoneP", "pmP", "dieselP", "trafficP"]
+ces["score_aq"] = ces[AQ_COLS].mean(axis=1)  # already 0–100 percentiles; NaN if all missing
+print(f"  AQ mean={ces['score_aq'].mean():.1f} max={ces['score_aq'].max():.1f}")
+
 # ── 2. Urban Heat Island ───────────────────────────────────────────────────
 print("Joining Urban Heat Island...")
 uhi = fix_geoms(gpd.read_file(DATA / "urban-heat-island.geojson"))
@@ -94,10 +100,11 @@ print(f"  SLR mean={ces['score_slr'].mean():.1f} max={ces['score_slr'].max():.1f
 # ── 5. Composite weighted score (re-normalise weights when data is missing) ──
 # Base weights (sum to 1.0)
 WEIGHTS = {
-    "score_ces": 0.50,
-    "score_uhi": 0.20,
-    "score_wui": 0.15,
-    "score_slr": 0.15,
+    "score_ces": 0.35,
+    "score_wui": 0.20,
+    "score_slr": 0.20,
+    "score_uhi": 0.15,
+    "score_aq":  0.10,
 }
 
 def compute_composite(row):
@@ -119,8 +126,8 @@ print(ces["composite"].describe().round(1))
 
 # ── 6. Export ──────────────────────────────────────────────────────────────
 print("\nExporting cumulative-impact.geojson...")
-out_cols = ["geometry", "composite", "score_ces", "score_uhi", "score_wui", "score_slr",
-            "CIscore", "CIscoreP"]
+out_cols = ["geometry", "composite", "score_ces", "score_wui", "score_slr", "score_uhi",
+            "score_aq", "CIscore", "CIscoreP"]
 out = ces[out_cols].reset_index()
 out = out.to_crs("EPSG:4326")
 out.to_file(DATA / "cumulative-impact.geojson", driver="GeoJSON")
