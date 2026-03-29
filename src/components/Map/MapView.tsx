@@ -338,7 +338,7 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
+    <div className="map-root" style={{ display: "flex", height: "100vh", width: "100vw" }}>
 
       {/* Desktop: sidebar as direct flex child */}
       {!isMobile && <LayerSidebar {...sidebarProps} />}
