@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR } from "@/config/layers";
 
 const SLR_LEVELS = [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5];
@@ -37,7 +38,6 @@ export default function LayerSidebar({
   visible, onToggle, slrLevel, onSlrLevelChange, layerOrder, onReorder, isMobile = false,
 }: Props) {
   const [showSources, setShowSources] = useState(false);
-  const [showMethodology, setShowMethodology] = useState(false);
 
   // Render layers in sidebar order; inject group header when group changes
   const orderedLayers = layerOrder.map((id) => LAYERS.find((l) => l.id === id)!);
@@ -169,26 +169,14 @@ export default function LayerSidebar({
       </div>
 
       <div className="border-t border-gray-200">
-        <button
-          onClick={() => setShowMethodology((s) => !s)}
+        <Link
+          href="/methodology"
+          target="_blank"
           className="w-full px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide hover:bg-gray-50 flex items-center justify-between"
         >
-          How it&apos;s calculated
-          <span>{showMethodology ? "▲" : "▼"}</span>
-        </button>
-        {showMethodology && (
-          <ul className="px-4 pb-3 space-y-3 max-h-72 overflow-y-auto">
-            {LAYERS.map(({ id, label, color, methodology }) => (
-              <li key={id}>
-                <p className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-sm shrink-0 inline-block" style={{ backgroundColor: color }} />
-                  {label}
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{methodology}</p>
-              </li>
-            ))}
-          </ul>
-        )}
+          Methodology
+          <span>↗</span>
+        </Link>
         <button
           onClick={() => setShowSources((s) => !s)}
           className="w-full px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide hover:bg-gray-50 flex items-center justify-between border-t border-gray-200"
