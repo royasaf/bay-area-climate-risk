@@ -12,7 +12,11 @@ interface Props {
   onSlrLevelChange: (level: number) => void;
   layerOrder: string[];
   onReorder: (id: string, direction: "up" | "down") => void;
+  isMobile?: boolean;
 }
+
+// Layers too large to load on mobile
+const MOBILE_DISABLED = new Set(["sea-level-rise", "wildfire-risk", "community-vulnerability"]);
 
 const LEGENDS: Record<string, { label: string; color: string }[]> = {
   "wildfire-risk": [
@@ -30,7 +34,7 @@ const LEGENDS: Record<string, { label: string; color: string }[]> = {
 
 
 export default function LayerSidebar({
-  visible, onToggle, slrLevel, onSlrLevelChange, layerOrder, onReorder,
+  visible, onToggle, slrLevel, onSlrLevelChange, layerOrder, onReorder, isMobile = false,
 }: Props) {
   const [showSources, setShowSources] = useState(false);
   const [showMethodology, setShowMethodology] = useState(false);
@@ -52,6 +56,7 @@ export default function LayerSidebar({
         </p>
         <ul className="space-y-0">
           {orderedLayers.map((layer, idx) => {
+            const disabledOnMobile = isMobile && MOBILE_DISABLED.has(layer.id);
             return (
               <li key={layer.id}>
                 <div className="mb-3">
@@ -70,20 +75,22 @@ export default function LayerSidebar({
                         aria-label="Move layer down"
                       >▼</button>
                     </div>
-                  <label className="flex items-center gap-2 cursor-pointer group flex-1">
+                  <label className={`flex items-center gap-2 flex-1 ${disabledOnMobile ? "opacity-40 cursor-not-allowed" : "cursor-pointer group"}`}>
                     <input
                       type="checkbox"
-                      checked={visible[layer.id] ?? true}
-                      onChange={() => onToggle(layer.id)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      checked={visible[layer.id] ?? false}
+                      onChange={() => !disabledOnMobile && onToggle(layer.id)}
+                      disabled={disabledOnMobile}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
                       onClick={(e) => e.stopPropagation()}
                     />
                     <span
                       className="w-3 h-3 rounded-sm shrink-0"
                       style={{ backgroundColor: layer.color }}
                     />
-                    <span className="text-sm text-gray-700 group-hover:text-gray-900 leading-tight">
+                    <span className="text-sm text-gray-700 leading-tight">
                       {layer.label}
+                      {disabledOnMobile && <span className="text-xs text-gray-400 block">Desktop only</span>}
                     </span>
                   </label>
                   </div>

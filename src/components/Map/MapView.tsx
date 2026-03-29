@@ -334,7 +334,7 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
 
   const sidebarProps = {
     visible, onToggle: toggleLayer, slrLevel,
-    onSlrLevelChange: setSlrLevel, layerOrder, onReorder: handleReorder,
+    onSlrLevelChange: setSlrLevel, layerOrder, onReorder: handleReorder, isMobile,
   };
 
   return (
