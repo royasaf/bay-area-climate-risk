@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
 """
-Build cumulative climate impact score by census tract.
-Weights:
-  - CalEnviroScreen percentile (equity + pollution burden): 35%
-  - Wildfire risk (hazard class → score):                   20%
-  - Sea level rise / flood exposure (≤1.5ft):               20%
-  - Urban Heat Island (normalized):                         15%
-  - Air quality (ozone, PM2.5, diesel, traffic percentiles): 10%
+Build cumulative climate vulnerability score by census tract.
+
+Formula (vulnerability science):
+  Vulnerability = Hazard_Exposure × (1 - Adaptive_Capacity)
+
+Hazard Exposure = weighted composite (normalised 0–100):
+  - CalEnviroScreen percentile: 35%
+  - Wildfire risk:              20%
+  - Sea level rise / flood:     20%
+  - Urban Heat Island:          15%
+  - Air quality:                10%
+
+Adaptive Capacity = (1 - CDC SVI percentile), normalised 0–1.
+  Tracts with no SVI data use AC = 0.5 (neutral).
+
+Final composite is re-scaled 0–100.
 Output: public/data/cumulative-impact.geojson
 """
 import numpy as np
@@ -119,14 +128,34 @@ def compute_composite(row):
         return np.nan
     return round(total_v / total_w, 1)
 
-ces["composite"] = ces[list(WEIGHTS.keys())].apply(compute_composite, axis=1)
+ces["hazard"] = ces[list(WEIGHTS.keys())].apply(compute_composite, axis=1)
+
+# ── 6. Adaptive Capacity from CDC SVI ─────────────────────────────────────
+print("Loading CDC SVI adaptive capacity...")
+ac_gdf = gpd.read_file(DATA / "adaptive-capacity.geojson")[["tract", "ac_score"]]
+ac_gdf["tract"] = ac_gdf["tract"].astype(str).str.strip()
+ces_idx = ces.index.astype(str).str.strip()
+
+ac_map = ac_gdf.set_index("tract")["ac_score"]
+ces["ac_score"] = ces_idx.map(ac_map)
+# Tracts with no SVI data → neutral AC (50)
+ces["ac_score"] = ces["ac_score"].fillna(50.0)
+print(f"  AC mean={ces['ac_score'].mean():.1f}  missing filled with 50")
+
+# ── 7. Final vulnerability score: Hazard × (1 - AdaptiveCapacity) ─────────
+# Normalise both to 0–1, multiply, then re-scale to 0–100
+hazard_01 = ces["hazard"].fillna(0) / 100.0
+ac_01      = ces["ac_score"] / 100.0
+raw = hazard_01 * (1.0 - ac_01) * 100.0   # 0–100 range (theoretical max = 100)
+ces["composite"] = raw.round(1)
 
 print(f"\nComposite score distribution:")
 print(ces["composite"].describe().round(1))
 
-# ── 6. Export ──────────────────────────────────────────────────────────────
+# ── 8. Export ──────────────────────────────────────────────────────────────
 print("\nExporting cumulative-impact.geojson...")
-out_cols = ["geometry", "composite", "score_ces", "score_wui", "score_slr", "score_uhi",
+out_cols = ["geometry", "composite", "hazard", "ac_score",
+            "score_ces", "score_wui", "score_slr", "score_uhi",
             "score_aq", "CIscore", "CIscoreP"]
 out = ces[out_cols].reset_index()
 out = out.to_crs("EPSG:4326")

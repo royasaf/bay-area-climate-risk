@@ -128,13 +128,24 @@ export default function LayerSidebar({
                     </ul>
                   )}
 
+                  {visible[layer.id] && layer.id === "adaptive-capacity" && (
+                    <div className="mt-1.5 ml-8">
+                      <div className="h-2 rounded-sm" style={{ background: "linear-gradient(to right, #dc2626, #f97316, #facc15, #84cc16, #16a34a)" }} />
+                      <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                        <span>Low</span>
+                        <span>Capacity</span>
+                        <span>High</span>
+                      </div>
+                    </div>
+                  )}
+
                   {visible[layer.id] && layer.id === "cumulative-impact" && (
                     <div className="mt-1.5 ml-8">
                       <div className="h-2 rounded-sm" style={{ background: "linear-gradient(to right, #fef9c3, #fde047, #f97316, #dc2626, #450a0a)" }} />
                       <div className="flex justify-between text-xs text-gray-400 mt-0.5">
-                        <span>Low (0)</span>
-                        <span>Score</span>
-                        <span>High (75)</span>
+                        <span>Low</span>
+                        <span>Vulnerability</span>
+                        <span>High</span>
                       </div>
                     </div>
                   )}

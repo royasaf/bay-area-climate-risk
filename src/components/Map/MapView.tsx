@@ -77,6 +77,24 @@ const uhiLayer = (id: string): any => ({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const adaptiveCapacityLayer = (id: string): any => ({
+  id: "adaptive-capacity-fill",
+  source: id,
+  type: "fill",
+  paint: {
+    "fill-color": [
+      "interpolate", ["linear"], ["get", "ac_score"],
+      0,   "#dc2626",
+      25,  "#f97316",
+      50,  "#facc15",
+      75,  "#84cc16",
+      100, "#16a34a",
+    ],
+    "fill-opacity": 0.7,
+  },
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cumulativeLayer = (id: string): any => ({
   id: "cumulative-impact-fill",
   source: id,
@@ -85,10 +103,10 @@ const cumulativeLayer = (id: string): any => ({
     "fill-color": [
       "interpolate", ["linear"], ["get", "composite"],
       0,    "#fef9c3",
-      11.7, "#fde047",
-      20.7, "#f97316",
-      32.1, "#dc2626",
-      74.4, "#450a0a",
+      4.1,  "#fde047",
+      11.8, "#f97316",
+      23.2, "#dc2626",
+      71.2, "#450a0a",
     ],
     "fill-opacity": 0.75,
   },
@@ -186,6 +204,23 @@ function CesPopup({ props }: { props: Record<string, any> }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function AdaptiveCapacityPopup({ props }: { props: Record<string, any> }) {
+  const ac = props.ac_score;
+  const label = ac >= 75 ? "High" : ac >= 50 ? "Moderate" : ac >= 25 ? "Low" : "Very Low";
+  const color = ac >= 75 ? "text-green-700" : ac >= 50 ? "text-yellow-600" : ac >= 25 ? "text-orange-600" : "text-red-700";
+  return (
+    <div className="text-xs text-gray-800 min-w-[160px]">
+      <p className="text-gray-400 mb-1">Census Tract {formatTract(props.tract)}</p>
+      <p className={`font-semibold mb-1 ${color}`}>
+        Adaptive Capacity: {ac != null ? ac.toFixed(0) : "N/A"}/100
+        <span className="font-normal text-gray-500 ml-1">({label})</span>
+      </p>
+      <p className="text-gray-500">SVI: {props.svi_score != null ? props.svi_score.toFixed(0) : "N/A"}/100</p>
+    </div>
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CumulativePopup({ props }: { props: Record<string, any> }) {
   const components = [
     { label: "CalEnviroScreen",   score: props.score_ces,  weight: "35%" },
@@ -200,18 +235,22 @@ function CumulativePopup({ props }: { props: Record<string, any> }) {
     <div className="text-xs text-gray-800 min-w-[200px]">
       <p className="text-gray-400 mb-1">Census Tract {formatTract(props.tract)}</p>
       <p className="font-semibold text-red-800 mb-1">
-        Cumulative Risk Score: {props.composite?.toFixed(1) ?? "N/A"}
+        Vulnerability Score: {props.composite?.toFixed(1) ?? "N/A"}
       </p>
-      <div className="border-t border-gray-200 pt-1">
-        <p className="font-medium text-gray-600 mb-0.5">Component scores</p>
+      <div className="border-t border-gray-200 pt-1 mb-1">
+        <p className="font-medium text-gray-600 mb-0.5">Hazard exposure ({props.hazard?.toFixed(0) ?? "N/A"})</p>
         {components.map(({ label, score, weight }) => (
           <div key={label} className="flex justify-between gap-4">
             <span>{label} <span className="text-gray-400">({weight})</span></span>
-            <span className={`font-medium ${fmt(score) === "N/A" ? "text-gray-400" : ""}`}>
-              {fmt(score)}
-            </span>
+            <span className={`font-medium ${fmt(score) === "N/A" ? "text-gray-400" : ""}`}>{fmt(score)}</span>
           </div>
         ))}
+      </div>
+      <div className="border-t border-gray-200 pt-1">
+        <div className="flex justify-between gap-4">
+          <span className="font-medium text-gray-600">Adaptive Capacity</span>
+          <span className="font-medium">{props.ac_score?.toFixed(0) ?? "N/A"}</span>
+        </div>
       </div>
     </div>
   );
@@ -223,6 +262,7 @@ const LAYER_DATA = {
   "community-vulnerability": LAYERS.find((l) => l.id === "community-vulnerability")!,
   "calenviroscreen":      LAYERS.find((l) => l.id === "calenviroscreen")!,
   "urban-heat-island":    LAYERS.find((l) => l.id === "urban-heat-island")!,
+  "adaptive-capacity":    LAYERS.find((l) => l.id === "adaptive-capacity")!,
   "cumulative-impact":    LAYERS.find((l) => l.id === "cumulative-impact")!,
 };
 
@@ -233,6 +273,7 @@ const FILL_ID: Record<string, string> = {
   "community-vulnerability": "community-vulnerability-fill",
   "calenviroscreen":         "calenviroscreen-fill",
   "urban-heat-island":       "urban-heat-island-fill",
+  "adaptive-capacity":       "adaptive-capacity-fill",
   "cumulative-impact":       "cumulative-impact-fill",
 };
 
@@ -253,6 +294,7 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
   const [pin, setPin] = useState<{ lng: number; lat: number } | null>(null);
   const [cesHover, setCesHover] = useState<HoverPopup>(null);
   const [ciHover, setCiHover] = useState<HoverPopup>(null);
+  const [acHover, setAcHover] = useState<HoverPopup>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(initialIsMobile);
 
@@ -320,13 +362,15 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
     }
     if (feat.layer?.id === "cumulative-impact-fill") {
       setCiHover({ lng: e.lngLat.lng, lat: e.lngLat.lat, props: feat.properties });
-      setCesHover(null);
+      setCesHover(null); setAcHover(null);
+    } else if (feat.layer?.id === "adaptive-capacity-fill") {
+      setAcHover({ lng: e.lngLat.lng, lat: e.lngLat.lat, props: feat.properties });
+      setCesHover(null); setCiHover(null);
     } else if (feat.properties?.CIscore != null) {
       setCesHover({ lng: e.lngLat.lng, lat: e.lngLat.lat, props: feat.properties });
-      setCiHover(null);
+      setCiHover(null); setAcHover(null);
     } else {
-      setCesHover(null);
-      setCiHover(null);
+      setCesHover(null); setCiHover(null); setAcHover(null);
     }
   }, []);
 
@@ -352,10 +396,11 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
           mapStyle={OPENFREEMAP_STYLE}
           interactiveLayerIds={[
             ...(visible["calenviroscreen"] ? ["calenviroscreen-fill"] : []),
+            ...(visible["adaptive-capacity"] ? ["adaptive-capacity-fill"] : []),
             ...(visible["cumulative-impact"] ? ["cumulative-impact-fill"] : []),
           ]}
           onMouseMove={handleMouseMove}
-          onMouseLeave={() => { setCesHover(null); setCiHover(null); }}
+          onMouseLeave={() => { setCesHover(null); setCiHover(null); setAcHover(null); }}
         >
           {renderOrder.map((id) => {
             if (!visible[id]) return null;
@@ -385,6 +430,11 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
                 <Layer {...uhiLayer(id)} />
               </Source>
             );
+            if (id === "adaptive-capacity") return (
+              <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
+                <Layer {...adaptiveCapacityLayer(id)} />
+              </Source>
+            );
             if (id === "cumulative-impact") return (
               <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
                 <Layer {...cumulativeLayer(id)} />
@@ -395,6 +445,11 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
           {cesHover && (
             <Popup longitude={cesHover.lng} latitude={cesHover.lat} closeButton={false} anchor="bottom-left" offset={8}>
               <CesPopup props={cesHover.props} />
+            </Popup>
+          )}
+          {acHover && (
+            <Popup longitude={acHover.lng} latitude={acHover.lat} closeButton={false} anchor="bottom-left" offset={8}>
+              <AdaptiveCapacityPopup props={acHover.props} />
             </Popup>
           )}
           {ciHover && (

@@ -87,6 +87,20 @@ export const LAYERS: LayerConfig[] = [
     methodology: "CalEPA measures the Urban Heat Island Intensity (UHII) using atmospheric modeling across 182 warm-season days (2006 & 2013) at hourly timesteps. Each census tract is compared to nearby upwind rural reference points at 2 m above ground — where people experience heat. The result is expressed as DegHourDay (UHII ÷ 182): the average daily heat differential in degree-Celsius-hours. An increase of 1 °C sustained for 8 hours equals 8 °C·hr/day.",
   },
   {
+    id: "adaptive-capacity",
+    label: "Adaptive Capacity (SVI)",
+    group: "vulnerability",
+    color: "#16a34a",
+    geojsonPath: "/data/adaptive-capacity.geojson",
+    source: {
+      name: "Social Vulnerability Index 2022",
+      organization: "CDC / ATSDR",
+      url: "https://www.atsdr.cdc.gov/placeandhealth/svi/index.html",
+      year: "2022",
+    },
+    methodology: "The CDC Social Vulnerability Index (SVI) measures a community's ability to withstand and recover from external stressors using 16 census variables across four themes: socioeconomic status, household characteristics, racial & ethnic minority status, and housing type & transportation. Adaptive Capacity is displayed here as the inverse of SVI — green tracts have high capacity to prepare and recover; red tracts have low capacity.",
+  },
+  {
     id: "cumulative-impact",
     label: "Cumulative Risk Score",
     group: "vulnerability",
@@ -98,7 +112,7 @@ export const LAYERS: LayerConfig[] = [
       url: "#",
       year: "2024",
     },
-    methodology: "Weighted composite of five data layers by census tract: CalEnviroScreen 4.0 percentile (35%), Wildfire hazard class (20%), Sea Level Rise flood fraction at 1.5 ft (20%), Urban Heat Island intensity (15%), and Air Quality burden (10%, derived from ozone, PM2.5, diesel, and traffic percentiles in CalEnviroScreen). Each component is normalised to 0–100 before weighting. Where a factor has no coverage for a tract, it is excluded and the remaining weights are renormalised. Higher scores indicate communities facing compounding structural and climate burdens.",
+    methodology: "Applies the vulnerability science formula: Vulnerability = Hazard Exposure × (1 − Adaptive Capacity). Hazard Exposure is a weighted composite of five layers (CalEnviroScreen 35%, Wildfire 20%, Flood/SLR 20%, Urban Heat Island 15%, Air Quality 10%), each normalised 0–100. Adaptive Capacity is derived from the CDC Social Vulnerability Index (1 − SVI percentile). Tracts with high hazard and low adaptive capacity score highest.",
   },
 ];
 
