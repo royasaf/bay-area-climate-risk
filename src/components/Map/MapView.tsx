@@ -6,7 +6,7 @@ import type { MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import LayerSidebar from "./LayerSidebar";
 import SearchBar from "./SearchBar";
-import { LAYERS, HAZ_COLOR, VULNERABILITY_COLOR } from "@/config/layers";
+import { LAYERS, HAZ_COLOR } from "@/config/layers";
 
 const BAY_AREA = { longitude: -122.35, latitude: 37.65, zoom: 9 };
 const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
@@ -36,24 +36,6 @@ const slrLayer = (id: string): any => ({
   paint: {
     "fill-color": "#3b82f6",
     "fill-opacity": 0.5,
-  },
-});
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const vulnerabilityLayer = (id: string): any => ({
-  id: "community-vulnerability-fill",
-  source: id,
-  type: "fill",
-  paint: {
-    "fill-color": [
-      "match", ["get", "socVulnRank"],
-      "Highest social vulnerability",  VULNERABILITY_COLOR["Highest social vulnerability"],
-      "High social vulnerability",     VULNERABILITY_COLOR["High social vulnerability"],
-      "Moderate social vulnerability", VULNERABILITY_COLOR["Moderate social vulnerability"],
-      "Low social vulnerability",      VULNERABILITY_COLOR["Low social vulnerability"],
-      "transparent",
-    ],
-    "fill-opacity": 0.65,
   },
 });
 
@@ -327,7 +309,6 @@ function CumulativePopup({ props }: { props: Record<string, any> }) {
 const LAYER_DATA = {
   "wildfire-risk":           LAYERS.find((l) => l.id === "wildfire-risk")!,
   "sea-level-rise":          LAYERS.find((l) => l.id === "sea-level-rise")!,
-  "community-vulnerability": LAYERS.find((l) => l.id === "community-vulnerability")!,
   "calenviroscreen":         LAYERS.find((l) => l.id === "calenviroscreen")!,
   "urban-heat-island":       LAYERS.find((l) => l.id === "urban-heat-island")!,
   "seismic-hazard":          LAYERS.find((l) => l.id === "seismic-hazard")!,
@@ -339,7 +320,6 @@ const LAYER_DATA = {
 const FILL_ID: Record<string, string> = {
   "wildfire-risk":           "wildfire-risk-fill",
   "sea-level-rise":          "sea-level-rise-fill",
-  "community-vulnerability": "community-vulnerability-fill",
   "calenviroscreen":         "calenviroscreen-fill",
   "urban-heat-island":       "urban-heat-island-fill",
   "seismic-hazard":          "seismic-hazard-fill",
@@ -488,11 +468,6 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
             if (id === "sea-level-rise") return (
               <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
                 <Layer {...slrLayer(id)} filter={["==", ["get", "level"], slrLevel]} />
-              </Source>
-            );
-            if (id === "community-vulnerability") return (
-              <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
-                <Layer {...vulnerabilityLayer(id)} />
               </Source>
             );
             if (id === "calenviroscreen") return (

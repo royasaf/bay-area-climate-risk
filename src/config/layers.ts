@@ -45,20 +45,6 @@ export const LAYERS: LayerConfig[] = [
     methodology: "NOAA's Office for Coastal Management models inundation by overlaying sea level rise scenarios (0.5–9.5 ft above current mean higher high water) onto a high-resolution digital elevation model (DEM) derived from lidar surveys. Each scenario shows the land area that would be permanently flooded under that water level, assuming no additional storm surge.",
   },
   {
-    id: "community-vulnerability",
-    label: "Flooding Community Vulnerability",
-    group: "vulnerability",
-    color: "#a855f7",
-    geojsonPath: "/data/community-vulnerability.geojson",
-    source: {
-      name: "Community Vulnerability BCDC 2020",
-      organization: "BCDC",
-      url: "https://data.ca.gov/dataset/community-vulnerability-bcdc-2020",
-      year: "2020",
-    },
-    methodology: "The San Francisco Bay Conservation and Development Commission (BCDC) scores census tracts by combining physical flood exposure with social vulnerability indicators — including poverty rate, disability status, linguistic isolation, and housing quality — drawn from the American Community Survey. Tracts with both high flood risk and low adaptive capacity rank highest.",
-  },
-  {
     id: "calenviroscreen",
     label: "CalEnviroScreen 4.0",
     group: "vulnerability",
