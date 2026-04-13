@@ -139,6 +139,18 @@ export default function LayerSidebar({
                     </div>
                   )}
 
+                  {visible[layer.id] && layer.id === "seismic-hazard" && (
+                    <div className="mt-1.5 ml-8">
+                      <div className="h-2 rounded-sm" style={{ background: "linear-gradient(to right, #fef3c7, #fde68a, #f97316, #dc2626, #7f1d1d)" }} />
+                      <div className="flex justify-between text-xs text-gray-400 mt-0.5">
+                        <span>Low</span>
+                        <span>Seismic score</span>
+                        <span>High</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">Red lines = active faults</p>
+                    </div>
+                  )}
+
                   {visible[layer.id] && layer.id === "cumulative-impact" && (
                     <div className="mt-1.5 ml-8">
                       <div className="h-2 rounded-sm" style={{ background: "linear-gradient(to right, #fef9c3, #fde047, #f97316, #dc2626, #450a0a)" }} />

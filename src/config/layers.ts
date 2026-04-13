@@ -87,6 +87,20 @@ export const LAYERS: LayerConfig[] = [
     methodology: "CalEPA measures the Urban Heat Island Intensity (UHII) using atmospheric modeling across 182 warm-season days (2006 & 2013) at hourly timesteps. Each census tract is compared to nearby upwind rural reference points at 2 m above ground — where people experience heat. The result is expressed as DegHourDay (UHII ÷ 182): the average daily heat differential in degree-Celsius-hours. An increase of 1 °C sustained for 8 hours equals 8 °C·hr/day.",
   },
   {
+    id: "seismic-hazard",
+    label: "Seismic Hazard",
+    group: "climate-risk",
+    color: "#b45309",
+    geojsonPath: "/data/seismic-hazard.geojson",
+    source: {
+      name: "Fault Activity Map & Seismic Hazard Zones",
+      organization: "CGS / USGS",
+      url: "https://www.conservation.ca.gov/cgs/geologic-hazards",
+      year: "2023",
+    },
+    methodology: "Composite seismic score per census tract combining three components: fault proximity (Quaternary faults from CGS Fault Activity Map, +40 if within 1 km), liquefaction hazard zone (CGS Seismic Hazards Program, +50 if in designated zone), and county-level Peak Ground Acceleration from USGS NSHM 2018 (0–10 pts). Scores are capped at 100. Fault lines shown as overlay.",
+  },
+  {
     id: "adaptive-capacity",
     label: "Adaptive Capacity (SVI)",
     group: "vulnerability",
@@ -112,7 +126,7 @@ export const LAYERS: LayerConfig[] = [
       url: "#",
       year: "2024",
     },
-    methodology: "Applies the vulnerability science formula: Vulnerability = Hazard Exposure × (1 − Adaptive Capacity). Hazard Exposure is a weighted composite of five layers (CalEnviroScreen 35%, Wildfire 20%, Flood/SLR 20%, Urban Heat Island 15%, Air Quality 10%), each normalised 0–100. Adaptive Capacity is derived from the CDC Social Vulnerability Index (1 − SVI percentile). Tracts with high hazard and low adaptive capacity score highest.",
+    methodology: "Applies the vulnerability science formula: Final Risk = Hazard × CES Sensitivity × (1 − Adaptive Capacity). Hazard is a weighted composite of five physical layers (Wildfire 25%, Flood/SLR 25%, Seismic 20%, Urban Heat Island 20%, Air Quality 10%), each normalised 0–100. CES Sensitivity uses CalEnviroScreen percentile as an environmental burden amplifier. Adaptive Capacity is derived from the CDC Social Vulnerability Index (1 − SVI percentile).",
   },
 ];
 

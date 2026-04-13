@@ -77,6 +77,36 @@ const uhiLayer = (id: string): any => ({
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const seismicLayer = (id: string): any => ({
+  id: "seismic-hazard-fill",
+  source: id,
+  type: "fill",
+  paint: {
+    "fill-color": [
+      "interpolate", ["linear"], ["get", "seismic_score"],
+        0,  "#fef3c7",
+        10, "#fde68a",
+        45, "#f97316",
+        60, "#dc2626",
+        90, "#7f1d1d",
+    ],
+    "fill-opacity": 0.7,
+  },
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const faultLinesLayer = (): any => ({
+  id: "seismic-faults-line",
+  source: "seismic-faults",
+  type: "line",
+  paint: {
+    "line-color": "#dc2626",
+    "line-width": 1.5,
+    "line-opacity": 0.8,
+  },
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const adaptiveCapacityLayer = (id: string): any => ({
   id: "adaptive-capacity-fill",
   source: id,
@@ -103,10 +133,10 @@ const cumulativeLayer = (id: string): any => ({
     "fill-color": [
       "interpolate", ["linear"], ["get", "composite"],
       0,    "#fef9c3",
-      4.1,  "#fde047",
-      11.8, "#f97316",
-      23.2, "#dc2626",
-      71.2, "#450a0a",
+      1.9,  "#fde047",
+      7.4,  "#f97316",
+      16.8, "#dc2626",
+      40.0, "#450a0a",
     ],
     "fill-opacity": 0.75,
   },
@@ -221,13 +251,43 @@ function AdaptiveCapacityPopup({ props }: { props: Record<string, any> }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function SeismicPopup({ props }: { props: Record<string, any> }) {
+  const score = props.seismic_score;
+  const label = score >= 80 ? "Very High" : score >= 60 ? "High" : score >= 40 ? "Moderate" : score >= 20 ? "Low" : "Very Low";
+  const color = score >= 80 ? "text-red-800" : score >= 60 ? "text-red-700" : score >= 40 ? "text-orange-600" : "text-yellow-700";
+  return (
+    <div className="text-xs text-gray-800 min-w-[180px]">
+      <p className="text-gray-400 mb-1">Census Tract {formatTract(props.tract)}</p>
+      <p className={`font-semibold mb-1 ${color}`}>
+        Seismic Score: {score != null ? score.toFixed(0) : "N/A"}/100
+        <span className="font-normal text-gray-500 ml-1">({label})</span>
+      </p>
+      <div className="border-t border-gray-200 pt-1 space-y-0.5">
+        <div className="flex justify-between gap-4">
+          <span>Fault proximity</span>
+          <span className="font-medium">{props.fault_score != null ? props.fault_score : "N/A"}</span>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span>Liquefaction zone</span>
+          <span className="font-medium">{props.liq_score != null ? props.liq_score : "N/A"}</span>
+        </div>
+        <div className="flex justify-between gap-4">
+          <span>Ground shaking (PGA)</span>
+          <span className="font-medium">{props.pga_score != null ? props.pga_score.toFixed(1) : "N/A"}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CumulativePopup({ props }: { props: Record<string, any> }) {
   const components = [
-    { label: "CalEnviroScreen",   score: props.score_ces,  weight: "35%" },
-    { label: "Wildfire Risk",     score: props.score_wui,  weight: "20%" },
-    { label: "Flood / SLR",       score: props.score_slr,  weight: "20%" },
-    { label: "Urban Heat Island", score: props.score_uhi,  weight: "15%" },
-    { label: "Air Quality",       score: props.score_aq,   weight: "10%" },
+    { label: "Wildfire Risk",     score: props.score_wui,     weight: "25%" },
+    { label: "Flood / SLR",       score: props.score_slr,     weight: "25%" },
+    { label: "Seismic Hazard",    score: props.score_seismic, weight: "20%" },
+    { label: "Urban Heat Island", score: props.score_uhi,     weight: "20%" },
+    { label: "Air Quality",       score: props.score_aq,      weight: "10%" },
   ];
   const fmt = (v: number | null | undefined) =>
     v == null || isNaN(v as number) ? "N/A" : (v as number).toFixed(0);
@@ -246,7 +306,11 @@ function CumulativePopup({ props }: { props: Record<string, any> }) {
           </div>
         ))}
       </div>
-      <div className="border-t border-gray-200 pt-1">
+      <div className="border-t border-gray-200 pt-1 space-y-0.5">
+        <div className="flex justify-between gap-4">
+          <span className="font-medium text-gray-600">CES Sensitivity</span>
+          <span className="font-medium">{props.score_ces?.toFixed(0) ?? "N/A"}</span>
+        </div>
         <div className="flex justify-between gap-4">
           <span className="font-medium text-gray-600">Adaptive Capacity</span>
           <span className="font-medium">{props.ac_score?.toFixed(0) ?? "N/A"}</span>
@@ -257,13 +321,14 @@ function CumulativePopup({ props }: { props: Record<string, any> }) {
 }
 
 const LAYER_DATA = {
-  "wildfire-risk":        LAYERS.find((l) => l.id === "wildfire-risk")!,
-  "sea-level-rise":       LAYERS.find((l) => l.id === "sea-level-rise")!,
+  "wildfire-risk":           LAYERS.find((l) => l.id === "wildfire-risk")!,
+  "sea-level-rise":          LAYERS.find((l) => l.id === "sea-level-rise")!,
   "community-vulnerability": LAYERS.find((l) => l.id === "community-vulnerability")!,
-  "calenviroscreen":      LAYERS.find((l) => l.id === "calenviroscreen")!,
-  "urban-heat-island":    LAYERS.find((l) => l.id === "urban-heat-island")!,
-  "adaptive-capacity":    LAYERS.find((l) => l.id === "adaptive-capacity")!,
-  "cumulative-impact":    LAYERS.find((l) => l.id === "cumulative-impact")!,
+  "calenviroscreen":         LAYERS.find((l) => l.id === "calenviroscreen")!,
+  "urban-heat-island":       LAYERS.find((l) => l.id === "urban-heat-island")!,
+  "seismic-hazard":          LAYERS.find((l) => l.id === "seismic-hazard")!,
+  "adaptive-capacity":       LAYERS.find((l) => l.id === "adaptive-capacity")!,
+  "cumulative-impact":       LAYERS.find((l) => l.id === "cumulative-impact")!,
 };
 
 // MapLibre layer ID for each data layer
@@ -273,6 +338,7 @@ const FILL_ID: Record<string, string> = {
   "community-vulnerability": "community-vulnerability-fill",
   "calenviroscreen":         "calenviroscreen-fill",
   "urban-heat-island":       "urban-heat-island-fill",
+  "seismic-hazard":          "seismic-hazard-fill",
   "adaptive-capacity":       "adaptive-capacity-fill",
   "cumulative-impact":       "cumulative-impact-fill",
 };
@@ -295,6 +361,7 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
   const [cesHover, setCesHover] = useState<HoverPopup>(null);
   const [ciHover, setCiHover] = useState<HoverPopup>(null);
   const [acHover, setAcHover] = useState<HoverPopup>(null);
+  const [seismicHover, setSeismicHover] = useState<HoverPopup>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(initialIsMobile);
 
@@ -362,15 +429,18 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
     }
     if (feat.layer?.id === "cumulative-impact-fill") {
       setCiHover({ lng: e.lngLat.lng, lat: e.lngLat.lat, props: feat.properties });
-      setCesHover(null); setAcHover(null);
+      setCesHover(null); setAcHover(null); setSeismicHover(null);
     } else if (feat.layer?.id === "adaptive-capacity-fill") {
       setAcHover({ lng: e.lngLat.lng, lat: e.lngLat.lat, props: feat.properties });
-      setCesHover(null); setCiHover(null);
+      setCesHover(null); setCiHover(null); setSeismicHover(null);
+    } else if (feat.layer?.id === "seismic-hazard-fill") {
+      setSeismicHover({ lng: e.lngLat.lng, lat: e.lngLat.lat, props: feat.properties });
+      setCesHover(null); setCiHover(null); setAcHover(null);
     } else if (feat.properties?.CIscore != null) {
       setCesHover({ lng: e.lngLat.lng, lat: e.lngLat.lat, props: feat.properties });
-      setCiHover(null); setAcHover(null);
+      setCiHover(null); setAcHover(null); setSeismicHover(null);
     } else {
-      setCesHover(null); setCiHover(null); setAcHover(null);
+      setCesHover(null); setCiHover(null); setAcHover(null); setSeismicHover(null);
     }
   }, []);
 
@@ -397,10 +467,11 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
           interactiveLayerIds={[
             ...(visible["calenviroscreen"] ? ["calenviroscreen-fill"] : []),
             ...(visible["adaptive-capacity"] ? ["adaptive-capacity-fill"] : []),
+            ...(visible["seismic-hazard"] ? ["seismic-hazard-fill"] : []),
             ...(visible["cumulative-impact"] ? ["cumulative-impact-fill"] : []),
           ]}
           onMouseMove={handleMouseMove}
-          onMouseLeave={() => { setCesHover(null); setCiHover(null); setAcHover(null); }}
+          onMouseLeave={() => { setCesHover(null); setCiHover(null); setAcHover(null); setSeismicHover(null); }}
         >
           {renderOrder.map((id) => {
             if (!visible[id]) return null;
@@ -430,6 +501,11 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
                 <Layer {...uhiLayer(id)} />
               </Source>
             );
+            if (id === "seismic-hazard") return (
+              <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
+                <Layer {...seismicLayer(id)} />
+              </Source>
+            );
             if (id === "adaptive-capacity") return (
               <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
                 <Layer {...adaptiveCapacityLayer(id)} />
@@ -442,6 +518,12 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
             );
             return null;
           })}
+          {/* Fault lines — shown when seismic-hazard layer is visible */}
+          {visible["seismic-hazard"] && (
+            <Source id="seismic-faults" type="geojson" data="/data/seismic-faults.geojson">
+              <Layer {...faultLinesLayer()} />
+            </Source>
+          )}
           {cesHover && (
             <Popup longitude={cesHover.lng} latitude={cesHover.lat} closeButton={false} anchor="bottom-left" offset={8}>
               <CesPopup props={cesHover.props} />
@@ -450,6 +532,11 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
           {acHover && (
             <Popup longitude={acHover.lng} latitude={acHover.lat} closeButton={false} anchor="bottom-left" offset={8}>
               <AdaptiveCapacityPopup props={acHover.props} />
+            </Popup>
+          )}
+          {seismicHover && (
+            <Popup longitude={seismicHover.lng} latitude={seismicHover.lat} closeButton={false} anchor="bottom-left" offset={8}>
+              <SeismicPopup props={seismicHover.props} />
             </Popup>
           )}
           {ciHover && (
