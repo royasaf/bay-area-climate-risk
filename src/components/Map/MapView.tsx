@@ -309,7 +309,11 @@ function CumulativePopup({ props }: { props: Record<string, any> }) {
       <div className="border-t border-gray-200 pt-1 space-y-0.5">
         <div className="flex justify-between gap-4">
           <span className="font-medium text-gray-600">CES Sensitivity</span>
-          <span className="font-medium">{props.score_ces?.toFixed(0) ?? "N/A"}</span>
+          <span className="font-medium">
+            {props.score_ces != null
+              ? `${((50 + props.score_ces) / 100).toFixed(2)}×`
+              : "N/A"}
+          </span>
         </div>
         <div className="flex justify-between gap-4">
           <span className="font-medium text-gray-600">Adaptive Capacity</span>
