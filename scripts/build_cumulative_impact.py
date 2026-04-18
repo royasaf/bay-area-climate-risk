@@ -178,9 +178,16 @@ ces["composite"] = (raw / MAX_THEORETICAL * 100).clip(0, 100).round(1)
 print(f"\nComposite score distribution:")
 print(ces["composite"].describe().round(1))
 
-# ── 11. Export ────────────────────────────────────────────────────────────
+# ── 11. Percentile ranks ──────────────────────────────────────────────────
+# Rank each tract relative to all Bay Area tracts (0–100, higher = more vulnerable)
+ces["composite_pct"] = ces["composite"].rank(pct=True, na_option="bottom").mul(100).round(1)
+ces["hazard_pct"]    = ces["hazard"].rank(pct=True, na_option="bottom").mul(100).round(1)
+ces["ac_pct"]        = ces["ac_score"].rank(pct=True, na_option="bottom").mul(100).round(1)
+
+# ── 12. Export ────────────────────────────────────────────────────────────
 print("\nExporting cumulative-impact.geojson...")
-out_cols = ["geometry", "composite", "hazard", "ac_score",
+out_cols = ["geometry", "composite", "composite_pct", "hazard", "hazard_pct",
+            "ac_score", "ac_pct",
             "score_wui", "score_slr", "score_seismic", "score_uhi",
             "score_aq", "score_ces", "CIscore", "CIscoreP"]
 out = ces[out_cols].reset_index()

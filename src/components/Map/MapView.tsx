@@ -277,14 +277,18 @@ function CumulativePopup({ props }: { props: Record<string, any> }) {
     <div className="text-xs text-gray-800 min-w-[200px]">
       <p className="text-gray-400 mb-1">Census Tract {formatTract(props.tract)}</p>
       <p className="font-semibold text-red-800 mb-1">
-        Vulnerability Score: {props.composite?.toFixed(1) ?? "N/A"}
+        Vulnerability: {props.composite_pct != null ? `${props.composite_pct.toFixed(0)}th percentile` : "N/A"}
       </p>
       <div className="border-t border-gray-200 pt-1 mb-1">
-        <p className="font-medium text-gray-600 mb-0.5">Hazard exposure ({props.hazard?.toFixed(0) ?? "N/A"})</p>
+        <p className="font-medium text-gray-600 mb-0.5">
+          Hazard exposure ({props.hazard_pct != null ? `${props.hazard_pct.toFixed(0)}th pct` : "N/A"})
+        </p>
         {components.map(({ label, score, weight }) => (
           <div key={label} className="flex justify-between gap-4">
             <span>{label} <span className="text-gray-400">({weight})</span></span>
-            <span className={`font-medium ${fmt(score) === "N/A" ? "text-gray-400" : ""}`}>{fmt(score)}</span>
+            <span className={`font-medium ${fmt(score) === "N/A" ? "text-gray-400" : ""}`}>
+              {fmt(score) === "N/A" ? "N/A" : `${fmt(score)} / 100`}
+            </span>
           </div>
         ))}
       </div>
@@ -299,7 +303,9 @@ function CumulativePopup({ props }: { props: Record<string, any> }) {
         </div>
         <div className="flex justify-between gap-4">
           <span className="font-medium text-gray-600">Adaptive Capacity</span>
-          <span className="font-medium">{props.ac_score?.toFixed(0) ?? "N/A"}</span>
+          <span className="font-medium">
+            {props.ac_pct != null ? `${props.ac_pct.toFixed(0)}th percentile` : "N/A"}
+          </span>
         </div>
       </div>
     </div>
