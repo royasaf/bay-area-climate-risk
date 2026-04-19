@@ -112,7 +112,7 @@ export const LAYERS: LayerConfig[] = [
       url: "#",
       year: "2024",
     },
-    methodology: "Applies the vulnerability science formula: Final Risk = Hazard × CES Sensitivity × (1 − Adaptive Capacity). Hazard is a weighted composite of five physical layers (Wildfire 25%, Flood/SLR 25%, Seismic 20%, Urban Heat Island 20%, Air Quality 10%), each normalised 0–100. CES Sensitivity uses CalEnviroScreen percentile as an environmental burden amplifier. Adaptive Capacity is derived from the CDC Social Vulnerability Index (1 − SVI percentile).",
+    methodology: "Applies the vulnerability science formula: Final Risk = Hazard × CES Sensitivity × (1 − Adaptive Capacity). Hazard is a weighted composite of five physical layers (Wildfire 25%, Flood/SLR 25%, Seismic 20%, Urban Heat Island 20%, Air Quality 10%), each normalised 0–100. CES Sensitivity uses CalEnviroScreen percentile as an environmental burden amplifier (0.5–1.5×). Adaptive Capacity is derived from the CDC Social Vulnerability Index. Scores are shown as percentile ranks among all Bay Area census tracts.",
   },
 ];
 
