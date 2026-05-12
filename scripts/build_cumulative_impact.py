@@ -184,10 +184,25 @@ ces["composite_pct"] = ces["composite"].rank(pct=True, na_option="bottom").mul(1
 ces["hazard_pct"]    = ces["hazard"].rank(pct=True, na_option="bottom").mul(100).round(1)
 ces["ac_pct"]        = ces["ac_score"].rank(pct=True, na_option="bottom").mul(100).round(1)
 
-# ── 12. Export ────────────────────────────────────────────────────────────
+# ── 12. Neighborhood / place name via Census TIGER spatial join ───────────
+print("Joining place names...")
+import urllib.request, zipfile, io, tempfile, os
+tiger_zip = "https://www2.census.gov/geo/tiger/TIGER2022/PLACE/tl_2022_06_place.zip"
+tmp = tempfile.mkdtemp()
+with urllib.request.urlopen(tiger_zip) as r:
+    zipfile.ZipFile(io.BytesIO(r.read())).extractall(tmp)
+places = gpd.read_file(f"{tmp}/tl_2022_06_place.shp")[["NAME", "geometry"]].to_crs(ces.crs)
+ces_pts = ces.copy()
+ces_pts.geometry = ces_pts.geometry.centroid
+joined = gpd.sjoin(ces_pts[["geometry"]], places, how="left", predicate="within")
+ces["place_name"] = joined["NAME"].values
+ces["place_name"] = ces["place_name"].fillna("")
+print(f"  Named tracts: {(ces['place_name'] != '').sum()} / {len(ces)}")
+
+# ── 13. Export ────────────────────────────────────────────────────────────
 print("\nExporting cumulative-impact.geojson...")
 out_cols = ["geometry", "composite", "composite_pct", "hazard", "hazard_pct",
-            "ac_score", "ac_pct",
+            "ac_score", "ac_pct", "place_name",
             "score_wui", "score_slr", "score_seismic", "score_uhi",
             "score_aq", "score_ces", "CIscore", "CIscoreP"]
 out = ces[out_cols].reset_index()
