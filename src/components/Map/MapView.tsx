@@ -218,16 +218,23 @@ function CesPopup({ props }: { props: Record<string, any> }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AdaptiveCapacityPopup({ props }: { props: Record<string, any> }) {
   const ac = props.ac_score;
+  const hasData = ac != null;
   const label = ac >= 75 ? "High" : ac >= 50 ? "Moderate" : ac >= 25 ? "Low" : "Very Low";
   const color = ac >= 75 ? "text-green-700" : ac >= 50 ? "text-yellow-600" : ac >= 25 ? "text-orange-600" : "text-red-700";
   return (
     <div className="text-xs text-gray-800 min-w-[160px]">
       <p className="text-gray-400 mb-1">Census Tract {formatTract(props.tract)}</p>
-      <p className={`font-semibold mb-1 ${color}`}>
-        Adaptive Capacity: {ac != null ? ac.toFixed(0) : "N/A"}/100
-        <span className="font-normal text-gray-500 ml-1">({label})</span>
-      </p>
-      <p className="text-gray-500">SVI: {props.svi_score != null ? props.svi_score.toFixed(0) : "N/A"}/100</p>
+      {hasData ? (
+        <>
+          <p className={`font-semibold mb-1 ${color}`}>
+            Adaptive Capacity: {ac.toFixed(0)}/100
+            <span className="font-normal text-gray-500 ml-1">({label})</span>
+          </p>
+          <p className="text-gray-500">SVI: {props.svi_score != null ? props.svi_score.toFixed(0) : "N/A"}/100</p>
+        </>
+      ) : (
+        <p className="font-semibold text-gray-400">Adaptive Capacity: N/A</p>
+      )}
     </div>
   );
 }
