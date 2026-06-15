@@ -90,14 +90,14 @@ uhi_raw = area_weighted_join(ces, uhi, "degHourDay")
 ces["score_uhi"] = (uhi_raw / UHI_MAX * 100).clip(0, 100)  # NaN stays NaN
 print(f"  UHI mean={ces['score_uhi'].mean():.1f} max={ces['score_uhi'].max():.1f}")
 
-# ── 4. Wildfire Risk ──────────────────────────────────────────────────────
-print("Joining Wildfire risk...")
-wui = fix_geoms(gpd.read_file(DATA / "wildfire-risk.geojson"))
+# ── 4. Wildfire Risk (FHSZ) ──────────────────────────────────────────────
+print("Joining Wildfire risk (FHSZ)...")
+fhsz = fix_geoms(gpd.read_file(DATA / "fhsz.geojson"))
 HAZ_SCORE = {"Very High": 100.0, "High": 67.0, "Moderate": 33.0}
-wui["haz_score"] = wui["HAZ_DESC"].map(HAZ_SCORE).fillna(0.0)
+fhsz["haz_score"] = fhsz["Haz_Class"].map(HAZ_SCORE).fillna(0.0)
 
-ces["score_wui"] = area_weighted_join(ces, wui, "haz_score")  # NaN if no intersection
-print(f"  Wildfire mean={ces['score_wui'].mean():.1f} max={ces['score_wui'].max():.1f}")
+ces["score_fhsz"] = area_weighted_join(ces, fhsz, "haz_score")  # NaN if no intersection
+print(f"  Wildfire mean={ces['score_fhsz'].mean():.1f} max={ces['score_fhsz'].max():.1f}")
 
 # ── 5. Sea Level Rise (≤1.5 ft scenario) ─────────────────────────────────
 # Score = fraction of tract area inundated × 100 (0–100)
@@ -129,7 +129,7 @@ print(f"  Seismic mean={ces['score_seismic'].mean():.1f} max={ces['score_seismic
 # ── 7. Composite hazard score (re-normalise weights when data missing) ────
 # New weights: Wildfire 25%, Flood 25%, Seismic 20%, UHI 20%, AQ 10%
 WEIGHTS = {
-    "score_wui":     0.25,
+    "score_fhsz":    0.25,
     "score_slr":     0.25,
     "score_seismic": 0.20,
     "score_uhi":     0.20,
@@ -203,7 +203,7 @@ print(f"  Named tracts: {(ces['place_name'] != '').sum()} / {len(ces)}")
 print("\nExporting cumulative-impact.geojson...")
 out_cols = ["geometry", "composite", "composite_pct", "hazard", "hazard_pct",
             "ac_score", "ac_pct", "place_name",
-            "score_wui", "score_slr", "score_seismic", "score_uhi",
+            "score_fhsz", "score_slr", "score_seismic", "score_uhi",
             "score_aq", "score_ces", "CIscore", "CIscoreP"]
 out = ces[out_cols].reset_index()
 out = out.to_crs("EPSG:4326")

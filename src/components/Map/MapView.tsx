@@ -12,13 +12,13 @@ const BAY_AREA = { longitude: -122.35, latitude: 37.65, zoom: 9 };
 const OPENFREEMAP_STYLE = "https://tiles.openfreemap.org/styles/positron";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const wuiLayer = (id: string): any => ({
-  id: "wildfire-risk-fill",
+const fhszLayer = (id: string): any => ({
+  id: "fhsz-fill",
   source: id,
   type: "fill",
   paint: {
     "fill-color": [
-      "match", ["get", "HAZ_DESC"],
+      "match", ["get", "Haz_Class"],
       "Very High", HAZ_COLOR["Very High"],
       "High",      HAZ_COLOR["High"],
       "Moderate",  HAZ_COLOR["Moderate"],
@@ -272,7 +272,7 @@ function SeismicPopup({ props }: { props: Record<string, any> }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CumulativePopup({ props }: { props: Record<string, any> }) {
   const components = [
-    { label: "Wildfire Risk",     score: props.score_wui,     weight: "25%" },
+    { label: "Wildfire (FHSZ)",   score: props.score_fhsz,    weight: "25%" },
     { label: "Flood / SLR",       score: props.score_slr,     weight: "25%" },
     { label: "Seismic Hazard",    score: props.score_seismic, weight: "20%" },
     { label: "Urban Heat Island", score: props.score_uhi,     weight: "20%" },
@@ -322,7 +322,7 @@ function CumulativePopup({ props }: { props: Record<string, any> }) {
 }
 
 const LAYER_DATA = {
-  "wildfire-risk":           LAYERS.find((l) => l.id === "wildfire-risk")!,
+  "fhsz":                    LAYERS.find((l) => l.id === "fhsz")!,
   "sea-level-rise":          LAYERS.find((l) => l.id === "sea-level-rise")!,
   "calenviroscreen":         LAYERS.find((l) => l.id === "calenviroscreen")!,
   "urban-heat-island":       LAYERS.find((l) => l.id === "urban-heat-island")!,
@@ -333,7 +333,7 @@ const LAYER_DATA = {
 
 // MapLibre layer ID for each data layer
 const FILL_ID: Record<string, string> = {
-  "wildfire-risk":           "wildfire-risk-fill",
+  "fhsz":                    "fhsz-fill",
   "sea-level-rise":          "sea-level-rise-fill",
   "calenviroscreen":         "calenviroscreen-fill",
   "urban-heat-island":       "urban-heat-island-fill",
@@ -475,9 +475,9 @@ export default function MapView({ initialIsMobile = false }: { initialIsMobile?:
           {renderOrder.map((id) => {
             if (!visible[id]) return null;
             const data = LAYER_DATA[id as keyof typeof LAYER_DATA];
-            if (id === "wildfire-risk") return (
+            if (id === "fhsz") return (
               <Source key={id} id={id} type="geojson" data={data.geojsonPath}>
-                <Layer {...wuiLayer(id)} />
+                <Layer {...fhszLayer(id)} />
               </Source>
             );
             if (id === "sea-level-rise") return (

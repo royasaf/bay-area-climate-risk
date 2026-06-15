@@ -17,18 +17,18 @@ export interface LayerConfig {
 
 export const LAYERS: LayerConfig[] = [
   {
-    id: "wildfire-risk",
-    label: "Wildfire Risk (WUI)",
+    id: "fhsz",
+    label: "Fire Hazard Severity Zones (FHSZ)",
     group: "climate-risk",
-    color: "#ef4444",
-    geojsonPath: "/data/wildfire-risk.geojson",
+    color: "#dc2626",
+    geojsonPath: "/data/fhsz.geojson",
     source: {
-      name: "Wildland Urban Interface",
+      name: "Fire Hazard Severity Zones in SRA",
       organization: "CAL FIRE",
-      url: "https://hub.arcgis.com/maps/ab3148666b084efcbe3bec0bf6af7441/about",
+      url: "https://gis.data.ca.gov/datasets/CALFIRE-Forestry::fire-hazard-severity-zones-in-sra/about",
       year: "2022",
     },
-    methodology: "CAL FIRE designates Fire Hazard Severity Zones (FHSZ) based on fuel load, slope, fire weather, and ember production modeled across the landscape. The Wildland-Urban Interface (WUI) layer marks where structures intermingle with or are adjacent to wildland vegetation, identifying communities at elevated ignition and spread risk.",
+    methodology: "CAL FIRE's official regulatory designation of fire hazard across State Responsibility Areas (SRA). Zones are classified as Moderate, High, or Very High based on modeled fuel load, slope, fire weather, and ember cast. Unlike the WUI layer, FHSZ drives building code requirements and defensible-space vegetation management obligations under PRC 4291.",
   },
   {
     id: "sea-level-rise",
@@ -112,7 +112,7 @@ export const LAYERS: LayerConfig[] = [
       url: "#",
       year: "2024",
     },
-    methodology: "Applies the vulnerability science formula: Final Risk = Hazard × CES Sensitivity × (1 − Adaptive Capacity). Hazard is a weighted composite of five physical layers (Wildfire 25%, Flood/SLR 25%, Seismic 20%, Urban Heat Island 20%, Air Quality 10%), each normalised 0–100. CES Sensitivity uses CalEnviroScreen percentile as an environmental burden amplifier (0.5–1.5×). Adaptive Capacity is derived from the CDC Social Vulnerability Index. Scores are shown as percentile ranks among all Bay Area census tracts.",
+    methodology: "Applies the vulnerability science formula: Final Risk = Hazard × CES Sensitivity × (1 − Adaptive Capacity). Hazard is a weighted composite of five physical layers (Wildfire/FHSZ 25%, Flood/SLR 25%, Seismic 20%, Urban Heat Island 20%, Air Quality 10%), each normalised 0–100. CES Sensitivity uses CalEnviroScreen percentile as an environmental burden amplifier (0.5–1.5×). Adaptive Capacity is derived from the CDC Social Vulnerability Index. Scores are shown as percentile ranks among all Bay Area census tracts.",
   },
 ];
 

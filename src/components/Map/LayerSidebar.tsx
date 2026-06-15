@@ -19,7 +19,7 @@ interface Props {
 const MOBILE_DISABLED = new Set(["sea-level-rise"]);
 
 const LEGENDS: Record<string, { label: string; color: string }[]> = {
-  "wildfire-risk": [
+  "fhsz": [
     { label: "Very High", color: HAZ_COLOR["Very High"] },
     { label: "High",      color: HAZ_COLOR["High"] },
     { label: "Moderate",  color: HAZ_COLOR["Moderate"] },
